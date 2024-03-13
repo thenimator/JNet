@@ -4,3 +4,8 @@
 !CMakeLists.txt
 !README.md
 !/src/
+!/building/
+!setup.sh
+
+src/buildType.hpp
+building/ip.txt
