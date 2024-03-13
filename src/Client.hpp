@@ -6,7 +6,9 @@ class Client {
 public:
     Client(const std::string& host);
     void connect();
+    void disconnect();
     void receiveData();
+    bool hasConnection();
     ~Client();
 private:
     bool shouldDisconnect = false;

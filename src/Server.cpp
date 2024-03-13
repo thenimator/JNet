@@ -11,7 +11,7 @@ void Server::run() {
             std::array<bool,sizeof(Header)> receivedData;
             udp::endpoint remoteEndpoint;
             socket.receive_from(boost::asio::buffer(receivedData), remoteEndpoint);
-
+            std::cout << "Received\n";
             std::array<uint8_t, sizeof(Message)> data;
             Message message;
             message.id = (*(Header*)&receivedData).id;

@@ -2,8 +2,6 @@
 #include "Server.hpp"
 #include "defines.hpp"
 
-
-
 #if __has_include("buildType.hpp") 
 # include "buildType.hpp"
 #endif
@@ -22,6 +20,14 @@ int main(int argc, char** argv) {
         }
         std::string host(argv[1]);
         Client client(host);
+        client.connect();
+        boost::asio::io_context context;
+        boost::asio::steady_timer t(context, boost::asio::chrono::seconds(5));
+        t.wait();
+        client.disconnect();
+        while (client.hasConnection()) {
+            
+        }
     }
     if (BUILDTYPE == BuildType::Server) {
         Server server;
