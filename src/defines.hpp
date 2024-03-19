@@ -6,7 +6,11 @@
 
 #define PORT 16632
 
-
+enum class RequestType {
+    Matchmaking,
+    Broadcast,
+    Move
+};
 
 struct Header {
     uint64_t id;
