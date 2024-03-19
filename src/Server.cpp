@@ -8,10 +8,9 @@ void Server::run() {
     using namespace boost::asio::ip;
     try {
         while (!shouldClose) {
-            std::array<bool,sizeof(Header)> receivedData;
+            std::array<bool,sizeof(Message)> receivedData;
             udp::endpoint remoteEndpoint;
             socket.receive_from(boost::asio::buffer(receivedData), remoteEndpoint);
-            std::cout << "Received\n";
             std::array<uint8_t, sizeof(Message)> data;
             Message message;
             message.id = (*(Header*)&receivedData).id;
@@ -34,5 +33,9 @@ void Server::close() {
 }
 
 Server::~Server() {
-
+    if (!shouldClose) {
+        std::cerr << "You should call close() before destroying the object" << std::endl;
+        shouldClose = true;
+    }
+    sender.join();
 }

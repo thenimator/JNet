@@ -6,6 +6,7 @@
 !/src/
 !/building/
 !setup.sh
+!localIP.sh
 
 src/buildType.hpp
 building/ip.txt
