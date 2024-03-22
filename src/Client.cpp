@@ -1,4 +1,5 @@
 #include "Client.hpp"
+#include <string_view>
 
 
 
@@ -6,11 +7,11 @@ using namespace JNet::udp;
 
 
 
-Client::Client(const std::string& host) {
+Client::Client(std::string_view host) {
     using namespace boost::asio;
     ip::udp::resolver resolver(context);
     try {
-        std::string test = host;
+        std::string test = host.data();
         endpoint = *resolver.resolve(ip::udp::v4(),host,"16632").begin();
         
     } catch (boost::system::system_error& e) {
