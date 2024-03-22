@@ -1,15 +1,17 @@
 #include "Server.hpp"
 
+using namespace JNet::udp;
+
 Server::Server() : socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), PORT)) {
     sender = std::thread(boost::bind(&Server::run,this));
 }
 
 void Server::run() {
-    using namespace boost::asio::ip;
+    using namespace boost::asio;
     try {
         while (!shouldClose) {
             std::array<bool,sizeof(Message)> receivedData;
-            udp::endpoint remoteEndpoint;
+            ip::udp::endpoint remoteEndpoint;
             socket.receive_from(boost::asio::buffer(receivedData), remoteEndpoint);
             std::array<uint8_t, sizeof(Message)> data;
             Message message;
@@ -39,3 +41,4 @@ Server::~Server() {
     }
     sender.join();
 }
+
