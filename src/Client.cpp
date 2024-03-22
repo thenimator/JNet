@@ -1,11 +1,17 @@
 #include "Client.hpp"
 
+
+
+using namespace JNet::udp;
+
+
+
 Client::Client(const std::string& host) {
-    using namespace boost::asio::ip;
-    udp::resolver resolver(context);
+    using namespace boost::asio;
+    ip::udp::resolver resolver(context);
     try {
         std::string test = host;
-        endpoint = *resolver.resolve(udp::v4(),host,"16632").begin();
+        endpoint = *resolver.resolve(ip::udp::v4(),host,"16632").begin();
         
     } catch (boost::system::system_error& e) {
         std::cout << "Error when connecting with " << host << std::endl;
@@ -43,10 +49,10 @@ bool Client::hasConnection() {
 }
 
 void Client::receiveData() {
-    using namespace boost::asio::ip;
+    using namespace boost::asio;
     try {
-        udp::socket socket(context);
-        socket.open(udp::v4());
+        ip::udp::socket socket(context);
+        socket.open(ip::udp::v4());
         while (!shouldDisconnect) {
             std::cout << "While" << "\n";
             Header header = {messageCount};
@@ -72,4 +78,9 @@ void Client::receiveData() {
     }
     activeConnection = false;
 }
+
+
+
+
+
 

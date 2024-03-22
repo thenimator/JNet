@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
             return -1;
         }
         std::string host(argv[1]);
-        Client client(host);
+        JNet::udp::Client client(host);
         client.connect();
         boost::asio::io_context context;
         boost::asio::steady_timer t(context, boost::asio::chrono::seconds(5));
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
         }
     }
     if (BUILDTYPE == BuildType::Server) {
-        Server server;
+        JNet::udp::Server server;
         std::string command;
         std::cin >> command;
         server.close();
