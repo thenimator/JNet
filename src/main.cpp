@@ -1,5 +1,5 @@
-#include "Client.hpp"
-#include "Server.hpp"
+#include "UDP/Client.hpp"
+#include "UDP/Server.hpp"
 #include "defines.hpp"
 
 #if __has_include("buildType.hpp") 

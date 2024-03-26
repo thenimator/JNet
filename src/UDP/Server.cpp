@@ -27,7 +27,6 @@ void Server::run() {
         std::cerr << "EndWhat" << std::endl;
     }*/
     receive();
-    std::cout << "After first receive\n";
     
 }
 
@@ -52,7 +51,6 @@ void Server::receive() {
     boost::asio::buffer(receiveBuffer.buffer), 
     remoteEndpoint, 
     boost::bind(&Server::handleReceive, this, boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred));
-    std::cout << "Receive set up\n"; 
 }
 
 void Server::handleReceive(const boost::system::error_code& e, size_t messageSize) {
