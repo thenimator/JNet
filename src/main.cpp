@@ -32,10 +32,13 @@ int main(int argc, char** argv) {
     if (BUILDTYPE == BuildType::Server) {
         boost::asio::io_context context;
         JNet::udp::Server server(context);
+        std::cout << "Created server\n";
         context.run();
+        std::cout << "Debug\n";
         std::string command;
         std::cin >> command;
         server.close();
+        
     }
     return 0;
 }
