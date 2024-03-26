@@ -55,22 +55,22 @@ void Client::receiveData() {
         ip::udp::socket socket(context);
         socket.open(ip::udp::v4());
         while (!shouldDisconnect) {
-            std::cout << "While" << "\n";
             Header header = {messageCount};
             messageCount++;
             std::array<bool,sizeof(Header)> data;
             //std::copy_n(&header, data.size(), data.begin());
             memcpy(data.begin(),&header,data.size());
             socket.send_to(boost::asio::buffer(data),endpoint);
+            std::cout << "Message sent to " << endpoint.address() << "\n";
             std::array<uint8_t, sizeof(Message)> receivedData;
             Message message;
-            std::cout << "About to receive\n";
             size_t size = socket.receive_from(boost::asio::buffer(receivedData),endpoint);
-            std::cout << "Received\n";
+            std::cout << "Got response\n";
             *(std::array<uint8_t, sizeof(Message)> *)&message = receivedData;
 
             messages.push(message);
-            std::cout << message.id << "\n";
+            std::string receivedMessage((const char* )&message.data,message.header.messageLength);
+            std::cout << message.header.id << "\n" << receivedMessage << "\n\n"; 
         }
         
     
