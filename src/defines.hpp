@@ -4,23 +4,26 @@
 #include <iostream>
 #include <queue>
 
+
 #define PORT 16632
 
-enum class RequestType {
-    Matchmaking,
-    Broadcast,
-    Move
+#define maxMessageSize 1024
+
+enum class MessageType {
+    MatchmakingRequest,
+    BroadcastRequest,
+    MoveRequest,
+    Broadcast
 };
 
 struct Header {
     uint64_t id;
-};
-struct BroadcastRequest {
-    Header header;
+    uint32_t messageLength;
+    MessageType messageType;
 };
 struct Message {
-    uint64_t id;
-    std::array<uint8_t, 35> data;
+    Header header;
+    std::array<uint8_t, maxMessageSize - sizeof(Header)> data;
 };
 enum class BuildType {
     Client,

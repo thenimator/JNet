@@ -8,7 +8,7 @@ namespace JNet {
 
         class Client {
         public:
-            Client(const std::string& host);
+            Client(std::string_view host);
             void connect();
             void disconnect();
             void receiveData();
