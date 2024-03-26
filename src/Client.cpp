@@ -59,7 +59,7 @@ void Client::receiveData() {
             messageCount++;
             std::array<bool,sizeof(Header)> data;
             //std::copy_n(&header, data.size(), data.begin());
-            memcpy(data.begin(),&header,data.size());
+            memcpy(data.data(),&header,data.size());
             socket.send_to(boost::asio::buffer(data),endpoint);
             std::cout << "Message sent to " << endpoint.address() << "\n";
             std::array<uint8_t, sizeof(Message)> receivedData;
