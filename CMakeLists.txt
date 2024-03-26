@@ -4,7 +4,7 @@ project(JNet)
 
 
 
-file(GLOB sources CONFIGURE_DEPENDS src/*.hpp src/*.cpp)
+file(GLOB sources CONFIGURE_DEPENDS src/*.hpp src/*.cpp src/UDP/*.cpp src/UDP/*.hpp)
 
 
 if(!WIN32)
