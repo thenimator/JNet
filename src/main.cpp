@@ -37,4 +37,5 @@ int main(int argc, char** argv) {
         std::cin >> command;
         server.close();
     }
+    return 0;
 }
