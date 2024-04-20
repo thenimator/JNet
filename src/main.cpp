@@ -1,6 +1,7 @@
 #include "UDP/Client.hpp"
 #include "UDP/Server.hpp"
 #include "defines.hpp"
+#include <iostream>
 
 #if __has_include("buildType.hpp") 
 # include "buildType.hpp"

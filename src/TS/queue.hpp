@@ -1,12 +1,14 @@
+//Emplace should be added to allow for performance improvements
 #pragma once
-#include "../defines.hpp"
+#include <queue>
+#include <mutex>
 
 
 namespace JNet {
     namespace ts {
 
         template<class T>
-        class TSQueue {
+        class Queue {
         public:
             T& front() {
                 std::scoped_lock lock(dataMutex);
