@@ -20,7 +20,7 @@ namespace JNet {
                 std::scoped_lock lock(dataMutex);
                 data.push(insertElement);
             }
-            void push(const T&& insertElement) {
+            void push(T&& insertElement) {
                 std::scoped_lock lock(dataMutex);
                 data.push(insertElement);
             }
