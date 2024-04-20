@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include <iostream>
 
 using namespace JNet::udp;
 
@@ -58,7 +59,7 @@ void Server::handleReceive(const boost::system::error_code& e, size_t messageSiz
         if (!e.failed()) {
             std::unique_lock<std::mutex> queueLock {messagesMutex, std::defer_lock};
             queueLock.lock();
-            messages.emplace(receiveBuffer.message),
+            messages.push(receiveBuffer.message);
             queueLock.unlock();
             receive();
             respond(e, messageSize);

@@ -1,5 +1,6 @@
 #pragma once
 #include "../defines.hpp"
+#include "../TS/queue.hpp"
 
 
 namespace JNet {
@@ -23,7 +24,7 @@ namespace JNet {
             void respond(const boost::system::error_code& e, size_t messageSize);
             void handleMessage(const boost::system::error_code& e, size_t messageSize);
             void handleReceive(const boost::system::error_code& e, size_t messageSize);
-            std::queue<Message> messages;
+            JNet::ts::Queue<Message> messages;
             std::mutex messagesMutex;
             bool shouldClose = false;
             uint64_t messageCount = 0;
