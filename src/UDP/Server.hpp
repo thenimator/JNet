@@ -1,20 +1,16 @@
 #pragma once
 #include "../defines.hpp"
 #include "../TS/queue.hpp"
+#include "../message.hpp"
 
 
 namespace JNet {
     namespace udp {
-
-        union MessageBuffer
-        {
-            Message message;
-            std::array<char,sizeof(Message)> buffer;
-        };
         
 
         class Server {
         public:
+            Server() = delete;
             Server(boost::asio::io_context& context);
             void close();
             ~Server();
@@ -29,7 +25,6 @@ namespace JNet {
             bool shouldClose = false;
             uint64_t messageCount = 0;
             boost::asio::ip::udp::socket socket;
-            MessageBuffer receiveBuffer;
             boost::asio::ip::udp::endpoint remoteEndpoint;
 
         };

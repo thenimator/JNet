@@ -71,8 +71,8 @@ void Client::receiveData() {
             *(std::array<uint8_t, sizeof(Message)> *)&message = receivedData;
 
             messages.push(message);
-            std::string receivedMessage((const char* )&message.data,message.header.messageLength);
-            std::cout << message.header.id << "\n" << receivedMessage << "\n\n"; 
+            //std::string receivedMessage((const char* )&message.data,message.header.messageLength);
+            //std::cout << message.header.id << "\n" << receivedMessage << "\n\n"; 
         }
         
     

@@ -40,18 +40,19 @@ void Server::respond(const boost::system::error_code& e, size_t messageSize) {
     response.header.id = messageCount;
     response.header.messageType = MessageType::Broadcast;
     std::string answer = "Data could be here";
-    response.header.messageLength = answer.size();
-    memcpy(&response.data,answer.data(),answer.size());
+    response.header.size = answer.size();
+    response.body.resize(answer.size());
+    memcpy(response.body.data(),answer.data(),answer.size());
     messageCount++;
     socket.async_send_to(boost::asio::buffer(*(std::array<char,1024>*)&response),remoteEndpoint,std::bind(&Server::handleMessage, this, e, messageSize));
 
 }
 
 void Server::receive() {
-    socket.async_receive_from(
+    /*socket.async_receive_from(
     boost::asio::buffer(receiveBuffer.buffer), 
     remoteEndpoint, 
-    boost::bind(&Server::handleReceive, this, boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred));
+    boost::bind(&Server::handleReceive, this, boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred));*/
 }
 
 void Server::handleReceive(const boost::system::error_code& e, size_t messageSize) {
@@ -59,7 +60,7 @@ void Server::handleReceive(const boost::system::error_code& e, size_t messageSiz
         if (!e.failed()) {
             std::unique_lock<std::mutex> queueLock {messagesMutex, std::defer_lock};
             queueLock.lock();
-            messages.push(receiveBuffer.message);
+            //messages.push(receiveBuffer.message);
             queueLock.unlock();
             receive();
             respond(e, messageSize);

@@ -1,6 +1,7 @@
 #pragma once
 #include "../defines.hpp"
 #include "../TS/queue.hpp"
+#include "../message.hpp"
 
 namespace JNet {
     namespace udp {
