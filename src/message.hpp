@@ -45,5 +45,10 @@ namespace JNet {
         
     };
 
+    struct ServerMessage {
+        Message message;
+        
+    };
+
 
 }
