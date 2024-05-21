@@ -1,7 +1,7 @@
 #pragma once
 #include "../defines.hpp"
 #include "../TS/queue.hpp"
-#include "../message.hpp"
+#include "../Messages/message.hpp"
 
 
 namespace JNet {
@@ -26,6 +26,7 @@ namespace JNet {
             uint64_t messageCount = 0;
             boost::asio::ip::udp::socket socket;
             boost::asio::ip::udp::endpoint remoteEndpoint;
+            std::array<uint8_t, UINT16_MAX + 1> receiveBuffer;
 
         };
     }

@@ -1,4 +1,4 @@
-
+/*
 #include <string_view>
 #include <iostream>
 #include "Client.hpp"
@@ -60,7 +60,7 @@ void Client::receiveData() {
         ip::udp::socket socket(context.getAsioContext());
         socket.open(ip::udp::v4());
         while (!shouldDisconnect) {
-            Header header = {messageCount};
+            /*Header header = {messageCount};
             messageCount++;
             std::array<bool,sizeof(Header)> data;
             //std::copy_n(&header, data.size(), data.begin());
@@ -68,7 +68,7 @@ void Client::receiveData() {
             socket.send_to(boost::asio::buffer(data),endpoint);
             std::cout << "Message sent to " << endpoint.address() << "\n";
             std::array<uint8_t, sizeof(Message)> receivedData;
-            Message message;
+            std::unique_ptr<Message> message;
             size_t size = socket.receive_from(boost::asio::buffer(receivedData),endpoint);
             std::cout << "Got response\n";
             *(std::array<uint8_t, sizeof(Message)> *)&message = receivedData;
@@ -90,3 +90,4 @@ void Client::receiveData() {
 
 
 
+*/

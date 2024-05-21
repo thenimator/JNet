@@ -1,29 +1,36 @@
 #pragma once
-#include "../defines.hpp"
+#include "../IO_templates/BasicClient.hpp"
+
+namespace JNet {
+    namespace udp {
+        typedef BasicClient<boost::asio::ip::udp> Client;
+    }
+}
+/*#include "../defines.hpp"
 #include "../Context.hpp"
 #include "../TS/queue.hpp"
-#include "../message.hpp"
+#include "../Messages/message.hpp"
 #include "../Interfaces/IO_ClientInterface.hpp"
+#include <cstdint>
 
 
 namespace JNet {
     namespace udp {
-        class Client : IO_ClientInterface {
+        class Client : IO_ClientInterface<boost::asio::ip::tcp> {
         public:
             Client(Context& context);
             void connect(std::string_view host);
             void disconnect();
-            void receiveData();
+            
             bool hasConnection();
             ~Client();
         private:
+            void receiveData();
             bool shouldDisconnect = false;
             bool activeConnection = false;
-            Context& context;
-            std::thread receiver;
-            JNet::ts::Queue<Message> messages;
-            boost::asio::ip::udp::endpoint endpoint;
-            uint64_t messageCount = 0;
+            
+            
+            
 
         };
 
@@ -31,4 +38,4 @@ namespace JNet {
 
 
     }
-}
+}*/

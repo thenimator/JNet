@@ -1,5 +1,5 @@
 #pragma once
-#include "defines.hpp"
+#include "../defines.hpp"
 
 namespace JNet {
     
@@ -22,22 +22,12 @@ namespace JNet {
             os << "ID: " << msg.header.id << " Size: " << msg.header.size;
             return os;
         }
-        /*template<typename DataType>
-        friend Message& operator << (Message& msg, DataType insert) {
-            
-            //Is datatype trivially copyable
-            static_assert(std::is_standard_layout<DataType>::value, "Data is too complex to be automatically pushed into the message");
-
-            msg.body.resize(msg.body.size() + sizeof(DataType));
-            *(DataType*)(msg.body.back() + 1) = insert;
-
-            msg.header.size = msg.getSize();
-
-            return msg;
-        }*/
     public:
         Message();
         size_t getSize();
+        //is automatically called when converting to a buffer
+        void setSize();
+        void writeToBuffer(void* buffer, uint32_t bufferSize);
         std::vector<uint8_t> body;
         Header header;
     private:
@@ -47,8 +37,12 @@ namespace JNet {
 
     struct ServerMessage {
         Message message;
-        
+        //boost::asio::ip::basic_endpoint::basic_endpoint<boost::asio::ip::tcp> endpoint;
     };
+
+
+    
+    std::unique_ptr<Message> bufferToMessage(void* buffer);
 
 
 }

@@ -3,6 +3,8 @@
 #include <boost/bind/bind.hpp>
 #include <thread>
 #include <memory>
+#include <algorithm>
+#include <iostream>
 
 
 //should be changed

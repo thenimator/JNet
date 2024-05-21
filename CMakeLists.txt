@@ -14,7 +14,7 @@ else()
 endif()
 
 
-
+set_property(TARGET JNet PROPERTY CXX_STANDARD 20)
 
 
 # ------------------ boost asio ------------------

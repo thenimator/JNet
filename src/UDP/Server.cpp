@@ -49,19 +49,18 @@ void Server::respond(const boost::system::error_code& e, size_t messageSize) {
 }
 
 void Server::receive() {
-    /*socket.async_receive_from(
-    boost::asio::buffer(receiveBuffer.buffer), 
+    socket.async_receive_from(
+    boost::asio::buffer(receiveBuffer), 
     remoteEndpoint, 
-    boost::bind(&Server::handleReceive, this, boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred));*/
+    boost::bind(&Server::handleReceive, this, boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred));
 }
 
 void Server::handleReceive(const boost::system::error_code& e, size_t messageSize) {
     if (!shouldClose) {
         if (!e.failed()) {
-            std::unique_lock<std::mutex> queueLock {messagesMutex, std::defer_lock};
-            queueLock.lock();
-            //messages.push(receiveBuffer.message);
-            queueLock.unlock();
+            std::unique_ptr<Message> receivedMessage = bufferToMessage(&receiveBuffer);
+            
+            //messages.push(receivedMessage);
             receive();
             respond(e, messageSize);
             return;

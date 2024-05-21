@@ -13,22 +13,19 @@
 
 
 int main(int argc, char** argv) {
-    
+    JNet::Context context;
     if (BUILDTYPE == BuildType::Client) {
         if (argc != 2) {
             std::cerr << "requires exactly one argument" << std::endl;
             return -1;
         }
         std::string host(argv[1]);
-        JNet::udp::Client client(host);
-        client.connect();
+        JNet::udp::Client client(context);
+        client.connect(host);
         boost::asio::io_context context;
         boost::asio::steady_timer t(context, boost::asio::chrono::seconds(5));
         t.wait();
-        client.disconnect();
-        while (client.hasConnection()) {
-            
-        }
+        context.stop();
     }
     if (BUILDTYPE == BuildType::Server) {
         boost::asio::io_context context;
