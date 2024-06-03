@@ -14,12 +14,20 @@ else()
 endif()
 
 
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_EXE_LINKER_FLAGS "-static")
+set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 
 
 
 # ------------------ boost asio ------------------
 
-set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.54.0 REQUIRED system)

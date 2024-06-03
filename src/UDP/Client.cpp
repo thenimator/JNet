@@ -1,4 +1,4 @@
-
+/*
 #include <string_view>
 #include <iostream>
 #include "Client.hpp"
@@ -9,18 +9,8 @@ using namespace JNet::udp;
 
 
 
-Client::Client(std::string_view host) {
-    using namespace boost::asio;
-    ip::udp::resolver resolver(context);
-    try {
-        std::string test = host.data();
-        endpoint = *resolver.resolve(ip::udp::v4(),host,"16632").begin();
-        
-    } catch (boost::system::system_error& e) {
-        std::cout << "Error when connecting with " << host << std::endl;
-        std::cerr << e.what() << std::endl;
-        std::cerr << "Code: " << e.code() << std::endl;
-    }
+Client::Client(Context& givenContext) : context(givenContext) {
+    
 }
 
 Client::~Client() {
@@ -31,7 +21,19 @@ Client::~Client() {
     receiver.join();
 }
 
-void Client::connect() {
+void Client::connect(std::string_view host) {
+    using namespace boost::asio;
+    ip::udp::resolver resolver(context.getAsioContext());
+    try {
+        std::string test = host.data();
+        endpoint = *resolver.resolve(ip::udp::v4(),host,"16632").begin();
+        
+    } catch (boost::system::system_error& e) {
+        std::cout << "Error when connecting with " << host << std::endl;
+        std::cerr << e.what() << std::endl;
+        std::cerr << "Code: " << e.code() << std::endl;
+    }
+
     activeConnection = true;
     shouldDisconnect = false;
     receiver = std::thread(boost::bind(&Client::receiveData, this));
@@ -51,13 +53,14 @@ bool Client::hasConnection() {
     
 }
 
+//needs to be made asynchronous
 void Client::receiveData() {
     using namespace boost::asio;
     try {
-        ip::udp::socket socket(context);
+        ip::udp::socket socket(context.getAsioContext());
         socket.open(ip::udp::v4());
         while (!shouldDisconnect) {
-            Header header = {messageCount};
+            /*Header header = {messageCount};
             messageCount++;
             std::array<bool,sizeof(Header)> data;
             //std::copy_n(&header, data.size(), data.begin());
@@ -65,14 +68,14 @@ void Client::receiveData() {
             socket.send_to(boost::asio::buffer(data),endpoint);
             std::cout << "Message sent to " << endpoint.address() << "\n";
             std::array<uint8_t, sizeof(Message)> receivedData;
-            Message message;
+            std::unique_ptr<Message> message;
             size_t size = socket.receive_from(boost::asio::buffer(receivedData),endpoint);
             std::cout << "Got response\n";
             *(std::array<uint8_t, sizeof(Message)> *)&message = receivedData;
 
             messages.push(message);
-            std::string receivedMessage((const char* )&message.data,message.header.messageLength);
-            std::cout << message.header.id << "\n" << receivedMessage << "\n\n"; 
+            //std::string receivedMessage((const char* )&message.data,message.header.messageLength);
+            //std::cout << message.header.id << "\n" << receivedMessage << "\n\n"; 
         }
         
     
@@ -87,3 +90,4 @@ void Client::receiveData() {
 
 
 
+*/

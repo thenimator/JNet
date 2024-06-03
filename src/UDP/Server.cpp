@@ -3,8 +3,8 @@
 
 using namespace JNet::udp;
 
-Server::Server(boost::asio::io_context& context) : socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), PORT)) {
-    run();
+Server::Server(JNet::Context& context) : socket(context.getAsioContext(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), PORT)) {
+
 }
 
 void Server::run() {
@@ -36,39 +36,74 @@ void Server::handleMessage(const boost::system::error_code& e, size_t messageSiz
 }
 
 void Server::respond(const boost::system::error_code& e, size_t messageSize) {
-    Message response; 
+    /*Message response; 
     response.header.id = messageCount;
     response.header.messageType = MessageType::Broadcast;
     std::string answer = "Data could be here";
-    response.header.messageLength = answer.size();
-    memcpy(&response.data,answer.data(),answer.size());
+    response.header.size = answer.size();
+    response.body.resize(answer.size());
+    memcpy(response.body.data(),answer.data(),answer.size());
     messageCount++;
-    socket.async_send_to(boost::asio::buffer(*(std::array<char,1024>*)&response),remoteEndpoint,std::bind(&Server::handleMessage, this, e, messageSize));
+    socket.async_send_to(boost::asio::buffer(*(std::array<char,1024>*)&response),remoteEndpoint,std::bind(&Server::handleMessage, this, e, messageSize));*/
 
 }
 
 void Server::receive() {
+    
     socket.async_receive_from(
-    boost::asio::buffer(receiveBuffer.buffer), 
+    boost::asio::buffer(receiveBuffer), 
     remoteEndpoint, 
-    boost::bind(&Server::handleReceive, this, boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred));
+    boost::bind(&Server::handleReceive, this, boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred)
+    );
+    if (debugFlagActive<DebugFlag::serverDebug>()) 
+        std::cout << "Receiving from: " <<
+        socket.local_endpoint() << "\n";
+
+
+    if (debugFlagActive<DebugFlag::serverDebug>()) {
+        if (socket.is_open()) {
+            std::cout << "Socket is open\n";
+        } else {
+            std::cout << "Socket is closed\n";
+        }
+        
+    }
 }
 
 void Server::handleReceive(const boost::system::error_code& e, size_t messageSize) {
+    if (debugFlagActive<DebugFlag::serverDebug>()) 
+        std::cout << "Started handling receive" << std::endl;
     if (!shouldClose) {
         if (!e.failed()) {
-            std::unique_lock<std::mutex> queueLock {messagesMutex, std::defer_lock};
-            queueLock.lock();
-            messages.push(receiveBuffer.message);
-            queueLock.unlock();
-            receive();
+            if (debugFlagActive<DebugFlag::serverDebug>()) 
+                std::cout << "Hasn't failed" << std::endl;
+            Packet<>& packet = reinterpret_cast<Packet<>&>(receiveBuffer);
+            //messages.push(receivedMessage);
+            if (debugFlagActive<DebugFlag::serverDebug>()) 
+                std::cout << "Aquired message" << std::endl;
+            //receive shhould be moved back here
+            //receive();
             respond(e, messageSize);
+            if (debugFlagActive<DebugFlag::serverDebug>()) 
+                std::cout << "Packet id: " << packet.getId() << "\n";
+            if (debugFlagActive<DebugFlag::serverDebug>()) 
+                std::cout << "Packet size: " << packet.getSize() << "\n";
+            std::string out((char*)packet.getData(), packet.getSize());
+            if (debugFlagActive<DebugFlag::serverDebug>()) 
+                std::cout  << "Message:\n" << out << "\n";
+
+            std::string secondOut((char*)&packet.getBuffer(), packet.getSize());
+            if (debugFlagActive<DebugFlag::serverDebug>()) 
+                std::cout  << "\n\nMessage:\n" << secondOut << "\n";
+            receive();
             return;
         }
 
         std::cerr << "Error:\n" << e.message() << std::endl;
     }
     
+    if (debugFlagActive<DebugFlag::serverDebug>()) 
+        std::cout << "Unexecuted receive\n";
 
 
 }

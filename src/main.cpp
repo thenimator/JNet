@@ -1,3 +1,4 @@
+#include "Messages/communication.hpp"
 #include "UDP/Client.hpp"
 #include "UDP/Server.hpp"
 #include "defines.hpp"
@@ -13,33 +14,45 @@
 
 
 int main(int argc, char** argv) {
-    
+    JNet::Context context;
     if (BUILDTYPE == BuildType::Client) {
+        context.async_run();
         if (argc != 2) {
             std::cerr << "requires exactly one argument" << std::endl;
             return -1;
         }
         std::string host(argv[1]);
-        JNet::udp::Client client(host);
-        client.connect();
-        boost::asio::io_context context;
-        boost::asio::steady_timer t(context, boost::asio::chrono::seconds(5));
-        t.wait();
-        client.disconnect();
-        while (client.hasConnection()) {
-            
+        JNet::udp::Client client(context);
+        client.connect(host);
+        JNet::udp::Packet packet;
+        std::string YES = "Halt die klappe!";
+        memcpy(packet.getData(),YES.data(),YES.size());
+        packet.setId(8);
+        packet.setSize(YES.size());
+        packet.setMessageType(JNet::MessageType::Unset);
+        uint32_t messageCount = 0;
+        while (messageCount < 1) {
+            client.sendPacket(packet);
+            messageCount++;
         }
     }
     if (BUILDTYPE == BuildType::Server) {
-        boost::asio::io_context context;
         JNet::udp::Server server(context);
         std::cout << "Created server\n";
-        context.run();
-        std::cout << "Debug\n";
-        std::string command;
-        std::cin >> command;
+        server.run();
+        bool running = true;
+        context.async_run();
+        while (running) {
+            std::string command;
+            std::cin >> command;
+            if (command == "close") {
+                running = false;
+            }
+        }
+        
         server.close();
         
     }
+    context.shutDown(std::chrono::milliseconds(100));
     return 0;
 }
