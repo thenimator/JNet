@@ -3,6 +3,7 @@
 #include <deque>
 #include <mutex>
 #include <memory>
+#include <iostream>
 
 
 namespace JNet {
@@ -14,11 +15,11 @@ namespace JNet {
             Queue(const Queue&) = delete;
             Queue& operator=(const Queue&) = delete;
 
-            T&& consumeFront() {
+            T consumeFront() {
                 std::scoped_lock lock(dataMutex);
-                T temp = std::move(data.front());
+                T temp = data.front();
                 data.pop_front();
-                return std::move(temp);
+                return temp;
             }
 
             bool empty() {
@@ -38,7 +39,12 @@ namespace JNet {
             
             void push(T&& insertElement) {
                 std::scoped_lock lock(dataMutex);
-                data.push_back(insertElement);
+                data.emplace_back(insertElement);
+            }
+
+            void push(const T& insertElement) {
+                std::scoped_lock lock(dataMutex);
+                data.emplace_back(insertElement);
             }
             
             void pop() {

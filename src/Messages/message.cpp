@@ -1,13 +1,20 @@
 #include "message.hpp"
-
+/*
 using namespace JNet;
 
-size_t Message::getSize () {
+size_t Message::getSize() const {
     return body.size() + sizeof(Header);
 }
 
 Message::Message() {
     
+}
+
+JNet::Message::Message(Message &&other) {
+    this->body = std::move(other.body);
+    this->header.id = other.header.id;
+    this->header.messageType = other.header.messageType;
+    setSize();
 }
 
 void Message::setSize() {
@@ -51,3 +58,5 @@ std::unique_ptr<Message> JNet::bufferToMessage(void* buffer) {
 
     return returnMessage;
 }
+
+*/

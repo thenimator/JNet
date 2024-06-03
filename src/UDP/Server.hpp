@@ -2,6 +2,8 @@
 #include "../defines.hpp"
 #include "../TS/queue.hpp"
 #include "../Messages/message.hpp"
+#include "../Context.hpp"
+#include "packet.hpp"
 
 
 namespace JNet {
@@ -11,16 +13,17 @@ namespace JNet {
         class Server {
         public:
             Server() = delete;
-            Server(boost::asio::io_context& context);
+            Server(JNet::Context& context);
+            void run();
             void close();
             ~Server();
         private:
-            void run();
+            
             void receive();
             void respond(const boost::system::error_code& e, size_t messageSize);
             void handleMessage(const boost::system::error_code& e, size_t messageSize);
             void handleReceive(const boost::system::error_code& e, size_t messageSize);
-            JNet::ts::Queue<Message> messages;
+            JNet::ts::Queue<Packet<>> messages;
             std::mutex messagesMutex;
             bool shouldClose = false;
             uint64_t messageCount = 0;
