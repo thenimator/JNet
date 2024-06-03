@@ -81,13 +81,21 @@ void Server::handleReceive(const boost::system::error_code& e, size_t messageSiz
             //messages.push(receivedMessage);
             if (debugFlagActive<DebugFlag::serverDebug>()) 
                 std::cout << "Aquired message" << std::endl;
-            receive();
+            //receive shhould be moved back here
+            //receive();
             respond(e, messageSize);
             if (debugFlagActive<DebugFlag::serverDebug>()) 
-                std::cout << packet.getId() << "\n" << packet.getSize() << "\n";
+                std::cout << "Packet id: " << packet.getId() << "\n";
+            if (debugFlagActive<DebugFlag::serverDebug>()) 
+                std::cout << "Packet size: " << packet.getSize() << "\n";
             std::string out((char*)packet.getData(), packet.getSize());
             if (debugFlagActive<DebugFlag::serverDebug>()) 
-                std::cout << "Size: " << out.size() << "\n" << out << "\n";
+                std::cout  << "Message:\n" << out << "\n";
+
+            std::string secondOut((char*)&packet.getBuffer(), packet.getSize());
+            if (debugFlagActive<DebugFlag::serverDebug>()) 
+                std::cout  << "\n\nMessage:\n" << secondOut << "\n";
+            receive();
             return;
         }
 

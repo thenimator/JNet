@@ -10,7 +10,8 @@
 
 
 namespace JNet {
-    constexpr uint32_t bufferSize = 0x10000;
+    //Needs to be increased again
+    constexpr uint32_t bufferSize = 0x1000;
     template<typename InternetProtocol>
     class BasicClient {
     public:
@@ -94,28 +95,41 @@ namespace JNet {
                 std::cout << "Sent all messages\n";
             
         }*/
-        void handleSentMessage(ReuseableBuffer* recycleableBuffer, boost::system::error_code& e, size_t messageSize) {
+        void handleSentMessage(ReuseableBuffer* recycleableBuffer, const boost::system::error_code& e, std::size_t messageSize) {
             
             bufferManager.recycleBuffer(recycleableBuffer);
-
+            if (e.failed()) {
+                std::cerr << "WHY YOU " << e.value() << "\n";
+            }
         }
 
         void handleSentMessage(ReuseableBuffer* recycleableBuffer) {
+            std::cerr << "WHY CAN'T I CALL THE OTHER\n";
             bufferManager.recycleBuffer(recycleableBuffer);
         }
 
         void sendNextMessageToHost() {
+            
             ReuseableBuffer* sendBuffer = outgoing.consumeFront();
+            auto callBack = boost::bind(
+                &BasicClient<InternetProtocol>::handleSentMessage
+                ,this
+                ,sendBuffer
+                ,boost::asio::placeholders::error()
+                ,boost::asio::placeholders::bytes_transferred()
+            );
             //socket.async_send(boost::asio::buffer(sendBuffer->buffer) , boost::bind(&BasicClient::handleSentMessage, this, sendBuffer, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
             //socket.async_send(boost::asio::buffer(sendBuffer->buffer), boost::bind(&BasicClient<InternetProtocol>::handleSentMessage, this, sendBuffer, boost::asio::placeholders::error(), boost::asio::placeholders::bytes_transferred()));
-            socket.async_send(boost::asio::buffer(sendBuffer->buffer), 
-            boost::bind(
-            &BasicClient<InternetProtocol>::handleSentMessage
-            ,this
-            ,sendBuffer
+            socket.async_send(boost::asio::buffer(sendBuffer->buffer)
+            ,callBack
+            //,boost::bind(
+            //&BasicClient<InternetProtocol>::handleSentMessage
+            //
+            //,sendBuffer
             //,boost::asio::placeholders::error()
             //,boost::asio::placeholders::bytes_transferred()
-            ));
+            //)
+            );
             if (debugFlagActive<DebugFlag::clientDebug>()) {
                 std::stringstream ss;
 

@@ -23,7 +23,7 @@ namespace JNet {
         messageDebug = 0x10
     };
 
-    constexpr DebugFlags debugFlags = clientDebug | contextDebug | bufferManagerDebug | serverDebug | messageDebug;
+    constexpr DebugFlags debugFlags = clientDebug | contextDebug | serverDebug | messageDebug;
 
     template<DebugFlag flag>
     constexpr bool debugFlagActive() {

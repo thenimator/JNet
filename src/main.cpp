@@ -25,6 +25,11 @@ int main(int argc, char** argv) {
         JNet::udp::Client client(context);
         client.connect(host);
         JNet::udp::Packet packet;
+        std::string YES = "Halt die klappe!";
+        memcpy(packet.getData(),YES.data(),YES.size());
+        packet.setId(8);
+        packet.setSize(YES.size());
+        packet.setMessageType(JNet::MessageType::Unset);
         uint32_t messageCount = 0;
         while (messageCount < 1) {
             client.sendPacket(packet);
