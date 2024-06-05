@@ -1,6 +1,6 @@
 #include "Messages/communication.hpp"
 #include "Client.hpp"
-#include "UDP/Server.hpp"
+#include "Server.hpp"
 #include "defines.hpp"
 #include <iostream>
 
@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
         JNet::Client client(context);
         client.connect(host);
         JNet::udp::ReuseablePacket<JNet::udp::bufferSize> packet = std::move(client.getPacket());
-        std::string YES = "Hallo Mama!";
+        std::string YES = "Hello world!";
         memcpy(packet.packet().getData(),YES.data(),YES.size());
         packet.packet().setId(8);
         packet.packet().setSize(YES.size());
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
         }
     }
     if (BUILDTYPE == BuildType::Server) {
-        JNet::udp::Server server(context);
+        JNet::Server server(context);
         std::cout << "Created server\n";
         server.run();
         bool running = true;

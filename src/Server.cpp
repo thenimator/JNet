@@ -1,9 +1,9 @@
 #include "Server.hpp"
 #include <iostream>
 
-using namespace JNet::udp;
+using namespace JNet;
 
-Server::Server(JNet::Context& context) : socket(context.getAsioContext(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), PORT)) {
+Server::Server(JNet::Context& context) : udpSocket(context.getAsioContext(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), PORT)) {
 
 }
 
@@ -49,19 +49,21 @@ void Server::respond(const boost::system::error_code& e, size_t messageSize) {
 }
 
 void Server::receive() {
-    
-    socket.async_receive_from(
-    boost::asio::buffer(receiveBuffer), 
-    remoteEndpoint, 
-    boost::bind(&Server::handleReceive, this, boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred)
+    ReuseableBuffer* buffer = bufferManager.getBuffer();
+
+
+    udpSocket.async_receive_from(
+    boost::asio::buffer(buffer->buffer), 
+    buffer->endpoint, 
+    boost::bind(&Server::handlePacketReceive, this, buffer,boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred)
     );
     if (debugFlagActive<DebugFlag::serverDebug>()) 
         std::cout << "Receiving from: " <<
-        socket.local_endpoint() << "\n";
+        udpSocket.local_endpoint() << "\n";
 
 
     if (debugFlagActive<DebugFlag::serverDebug>()) {
-        if (socket.is_open()) {
+        if (udpSocket.is_open()) {
             std::cout << "Socket is open\n";
         } else {
             std::cout << "Socket is closed\n";
@@ -70,7 +72,7 @@ void Server::receive() {
     }
 }
 
-void Server::handleReceive(const boost::system::error_code& e, size_t messageSize) {
+void Server::handlePacketReceive(ReuseableBuffer* recycleableBuffer,const boost::system::error_code& e, size_t messageSize) {
     if (debugFlagActive<DebugFlag::serverDebug>()) {
         std::stringstream ss;
         ss << "Started handling receive for " << messageSize << " bytes\n";
@@ -81,7 +83,7 @@ void Server::handleReceive(const boost::system::error_code& e, size_t messageSiz
         if (!e.failed()) {
             if (debugFlagActive<DebugFlag::serverDebug>()) 
                 std::cout << "Hasn't failed" << std::endl;
-            Packet<>& packet = reinterpret_cast<Packet<>&>(receiveBuffer);
+            udp::Packet<>& packet = reinterpret_cast<udp::Packet<>&>(recycleableBuffer->buffer);
             //messages.push(receivedMessage);
             if (debugFlagActive<DebugFlag::serverDebug>()) 
                 std::cout << "Aquired message" << std::endl;
