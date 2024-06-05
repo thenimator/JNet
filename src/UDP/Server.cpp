@@ -71,8 +71,12 @@ void Server::receive() {
 }
 
 void Server::handleReceive(const boost::system::error_code& e, size_t messageSize) {
-    if (debugFlagActive<DebugFlag::serverDebug>()) 
-        std::cout << "Started handling receive" << std::endl;
+    if (debugFlagActive<DebugFlag::serverDebug>()) {
+        std::stringstream ss;
+        ss << "Started handling receive for " << messageSize << " bytes\n";
+        std::cout << ss.str();
+    }
+        
     if (!shouldClose) {
         if (!e.failed()) {
             if (debugFlagActive<DebugFlag::serverDebug>()) 
@@ -85,16 +89,7 @@ void Server::handleReceive(const boost::system::error_code& e, size_t messageSiz
             //receive();
             respond(e, messageSize);
             if (debugFlagActive<DebugFlag::serverDebug>()) 
-                std::cout << "Packet id: " << packet.getId() << "\n";
-            if (debugFlagActive<DebugFlag::serverDebug>()) 
-                std::cout << "Packet size: " << packet.getSize() << "\n";
-            std::string out((char*)packet.getData(), packet.getSize());
-            if (debugFlagActive<DebugFlag::serverDebug>()) 
-                std::cout  << "Message:\n" << out << "\n";
-
-            std::string secondOut((char*)&packet.getBuffer(), packet.getSize());
-            if (debugFlagActive<DebugFlag::serverDebug>()) 
-                std::cout  << "\n\nMessage:\n" << secondOut << "\n";
+                std::cout << packet.debugString();
             receive();
             return;
         }
