@@ -20,10 +20,12 @@ namespace JNet {
         clientDebug = 0x2,
         bufferManagerDebug = 0x4,
         serverDebug = 0x8,
-        messageDebug = 0x10
+        messageDebug = 0x10,
+        clientMessageOutput = 0x20,
+        packetDebug = 0x40
     };
 
-    constexpr DebugFlags debugFlags = clientDebug | contextDebug | serverDebug | messageDebug;
+    constexpr DebugFlags debugFlags = noDebug;
 
     template<DebugFlag flag>
     constexpr bool debugFlagActive() {
@@ -34,7 +36,7 @@ namespace JNet {
 
 }
 
-//should be changed
+
 #define PORT 16632
 
 #define maxMessageSize 1024

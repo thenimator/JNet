@@ -1,17 +1,18 @@
 #pragma once
-#include "../defines.hpp"
-#include "../Flags/flags.hpp"
+#include "../udp.hpp"
+#include "../../defines.hpp"
+#include "../../Flags/flags.hpp"
 
 namespace JNet {
-    namespace data {
-        template <uint32_t bufferSize = 0x10000, safetyFlags flags = 0>
+    namespace udp {
+        template <uint32_t bufferSize = bufferSize, safetyFlags flags = 0>
         class BufferManager;
         
 
-        template <const uint32_t reuseableBufferSize = 0x10000>
+        template <uint32_t reuseableBufferSize = bufferSize>
         class ReuseableBuffer {
-        template <uint32_t bufferSize, safetyFlags flags>
-        friend class BufferManager;
+            template <uint32_t bufferSize, safetyFlags flags>
+            friend class BufferManager;
         public:  
             std::array<uint8_t, reuseableBufferSize> buffer;
         protected:
@@ -19,10 +20,11 @@ namespace JNet {
 
             
         };
+
         //this somehow isn't recognized as constexpr
         //try separating definition from implementation
 
-        template <uint32_t bufferSize = 0x10000>
+        template <uint32_t bufferSize = bufferSize>
         class BufferManagerBase {
         public:
             constexpr static uint32_t getBufferSize() noexcept {

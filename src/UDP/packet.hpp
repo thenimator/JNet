@@ -1,11 +1,12 @@
 #pragma once
+#include "udp.hpp"
 #include "../Messages/message.hpp"
 #include "../Flags/flags.hpp"
 #include "../Exceptions/exceptions.hpp"
 
 namespace JNet {
     namespace udp {
-        template <uint32_t TBufferSize = 0x10000, safetyFlags flags = SafetyFlag::unSafe>
+        template <uint32_t TBufferSize = bufferSize, safetyFlags flags = SafetyFlag::unSafe>
         class Packet {
             static_assert(flags == SafetyFlag::unSafe || flags == SafetyFlag::runtimeBoundsChecks, "Given flags aren't supported");
             static_assert(TBufferSize <= 0x10000, "TBufferSize is greater than max udp packet size. Data loss is guaranteed");
@@ -26,6 +27,7 @@ namespace JNet {
             void setMessageType(MessageType type);
             void* getData();
             const std::array<uint8_t,TBufferSize>& getBuffer() const;
+            std::string debugString();
         private:
             /** @brief The first sizeof(Header) bytes are used to store the header of the udp packet. All remaining bytes are used to store data
              */
@@ -33,6 +35,18 @@ namespace JNet {
         };
 
 
+
+        template <uint32_t TBufferSize, safetyFlags flags>
+        std::string Packet<TBufferSize,flags>::debugString() {
+            std::stringstream ss;
+            ss << "Packet id: " << getId() << "\n";
+            ss << "Packet size: " << getSize() << "\n";
+            std::string out((char*)getData(), getSize());
+            ss  << "Message:\n" << out << "\n";
+            std::string secondOut((char*)&getBuffer(), getSize());
+            ss  << "\n\nMessage:\n" << secondOut << "\n";
+            return ss.str();
+        }
 
         template <uint32_t TBufferSize, safetyFlags flags>
         const std::array<uint8_t,TBufferSize>& Packet<TBufferSize,flags>::getBuffer() const {

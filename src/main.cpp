@@ -24,15 +24,15 @@ int main(int argc, char** argv) {
         std::string host(argv[1]);
         JNet::udp::Client client(context);
         client.connect(host);
-        JNet::udp::Packet packet;
-        std::string YES = "Halt die klappe!";
-        memcpy(packet.getData(),YES.data(),YES.size());
-        packet.setId(8);
-        packet.setSize(YES.size());
-        packet.setMessageType(JNet::MessageType::Unset);
+        JNet::udp::ReuseablePacket<0x1000> packet = std::move(client.getPacket());
+        std::string YES = "Hallo Mama!";
+        memcpy(packet.packet().getData(),YES.data(),YES.size());
+        packet.packet().setId(8);
+        packet.packet().setSize(YES.size());
+        packet.packet().setMessageType(JNet::MessageType::Unset);
         uint32_t messageCount = 0;
         while (messageCount < 1) {
-            client.sendPacket(packet);
+            client.sendPacket(std::move(packet));
             messageCount++;
         }
     }

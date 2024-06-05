@@ -7,18 +7,18 @@
 #include <boost/asio/placeholders.hpp>
 #include <type_traits>
 #include "../Context.hpp"
+#include "../UDP/ReuseablePacket.hpp"
 
 
 namespace JNet {
-    //Needs to be increased again
-    constexpr uint32_t bufferSize = 0x1000;
+    //needs to be refactored to support all protocols
     template<typename InternetProtocol>
     class BasicClient {
     public:
         typedef boost::asio::ip::basic_endpoint<InternetProtocol> Endpoint;
         typedef boost::asio::basic_datagram_socket<InternetProtocol> Socket;
         typedef boost::asio::ip::basic_resolver<InternetProtocol> Resolver;
-        typedef data::ReuseableBuffer<bufferSize> ReuseableBuffer;
+        typedef udp::ReuseableBuffer<> ReuseableBuffer;
         
     public:
         BasicClient(Context& givenContext) : context(givenContext), socket(givenContext.getAsioContext()) {
@@ -29,28 +29,34 @@ namespace JNet {
         ~BasicClient() {
             sender.join();
         }
+
+        udp::ReuseablePacket<> getPacket() {
+            return udp::ReuseablePacket<>(bufferManager.getBuffer());
+        }
+
+        void sendPacket(udp::ReuseablePacket<> packet) {
+            if (host == "") {
+                if (debugFlagActive<DebugFlag::clientDebug>()) 
+                    std::cout << "No host given but packet send attempted\n";
+                bufferManager.recycleBuffer(packet.buffer);
+
+                return;
+            }
+            outgoing.push(packet.buffer);
+
+            boost::asio::post(sender, boost::bind(&BasicClient<InternetProtocol>::sendNextMessageToHost,this));
+        }
         
-        
+        //out of work
+        // DO NOT USE
         void sendPacket(udp::Packet<>& message) {
             if (host == "")
                 return;
-            ReuseableBuffer* sendBuffer = bufferManager.getBuffer();
+            udp::ReuseableBuffer<>* sendBuffer = bufferManager.getBuffer();
             //message.writeToBuffer(&sendBuffer, sendBuffer->buffer.size());
             outgoing.push(sendBuffer);
 
             boost::asio::post(sender, boost::bind(&BasicClient<InternetProtocol>::sendNextMessageToHost,this));
-        }
-        void resolveHost() {
-            Resolver resolver(context.getAsioContext());
-            try {
-
-                remoteEndpoint = *resolver.resolve(host,"16632").begin();
-                
-            } catch (boost::system::system_error& e) {
-                std::cout << "Error when connecting with " << host << std::endl;
-                std::cerr << e.what() << std::endl;
-                std::cerr << "Code: " << e.code() << std::endl;
-            }
         }
         void connect(const std::string& host) {
             this->host = host;
@@ -81,10 +87,21 @@ namespace JNet {
         uint64_t messageCount = 0;
         ts::Queue<std::unique_ptr<udp::Packet<>>> incoming;
         ts::Queue<ReuseableBuffer*> outgoing;
-        std::array<uint8_t, bufferSize> receiveBuffer;
-        ts::BufferManager<bufferSize> bufferManager;
+        ts::BufferManager<> bufferManager;
 
     private:
+        void resolveHost() {
+            Resolver resolver(context.getAsioContext());
+            try {
+
+                remoteEndpoint = *resolver.resolve(host,"16632").begin();
+                
+            } catch (boost::system::system_error& e) {
+                std::cout << "Error when connecting with " << host << std::endl;
+                std::cerr << e.what() << std::endl;
+                std::cerr << "Code: " << e.code() << std::endl;
+            }
+        }
         /*void sendMessagesToHost() {
             if (debugFlagActive<DebugFlag::clientDebug>()) 
                 std::cout << "Sending all messages\n";
