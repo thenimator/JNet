@@ -41,8 +41,12 @@ namespace JNet {
             BufferManager& operator=(BufferManager&) = delete;
             ~BufferManager()  {
                 for (uint32_t i = 0; i < managedBuffers.size(); i++) {
-                    if (debugFlagActive<DebugFlag::bufferManagerDebug>()) 
-                        std::cout << "Deleting buffer with id: " << managedBuffers[i] <<"\n";
+                    if (debugFlagActive<DebugFlag::bufferManagerDebug>()) {
+                        std::stringstream ss;
+                        ss << "Deleting buffer with id: " << managedBuffers[i] <<"\n";
+                        std::cout << ss.str();
+                    }
+                        
                     delete managedBuffers[i];
                 }
             }
@@ -53,8 +57,12 @@ namespace JNet {
                 //std::cout << firstLock.owns_lock() << "\n";
                 //std::unique_lock firstLock(lastMutex);
                 //std::unique_lock lastLock(lastMutex);
-                if (debugFlagActive<DebugFlag::bufferManagerDebug>()) 
-                    std::cout << "Recycling buffer with id: " << buffer << "\n";
+                if (debugFlagActive<DebugFlag::bufferManagerDebug>())  {
+                    std::stringstream ss; 
+                    ss << "Recycling buffer with id: " << buffer << "\n";
+                    std::cout << ss.str();
+                }
+                    
 
                 if (hasFlag<SafetyFlag::threadSafe>(flags)) 
                     //lastLock.lock();
