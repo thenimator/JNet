@@ -5,13 +5,22 @@
 
 namespace JNet {
     namespace udp {
-        template <uint32_t bufferSize = bufferSize, safetyFlags flags = 0>
+        template <uint32_t bufferSize = bufferSize, safetyFlags flags = 0, bool includeEndpoint = false>
         class BufferManager;
         
+        template<bool c>
+        struct ReuseableBufferBase { };
 
-        template <uint32_t reuseableBufferSize = bufferSize>
-        class ReuseableBuffer {
-            template <uint32_t bufferSize, safetyFlags flags>
+        template<>
+        struct ReuseableBufferBase<true> {
+            Endpoint endpoint;
+        };
+
+
+
+        template <uint32_t reuseableBufferSize = bufferSize, bool TIncludeEndpoint = false>
+        class ReuseableBuffer : public ReuseableBufferBase<TIncludeEndpoint>{
+            template <uint32_t bufferSize, safetyFlags flags, bool includeEndpoint>
             friend class BufferManager;
         public:  
             std::array<uint8_t, reuseableBufferSize> buffer;
@@ -31,10 +40,13 @@ namespace JNet {
                 return bufferSize;
             }
         };
-        template <uint32_t bufferSize, safetyFlags flags>
+
+
+
+        template <uint32_t bufferSize, safetyFlags flags, bool includeEndpoint>
         class BufferManager : public BufferManagerBase<bufferSize> {
         public:
-            typedef ReuseableBuffer<bufferSize> ManagedBuffer;
+            typedef ReuseableBuffer<bufferSize, includeEndpoint> ManagedBuffer;
         public:
             BufferManager() = default;
             BufferManager(const BufferManager&) = delete;
@@ -89,7 +101,7 @@ namespace JNet {
 
             }
 
-            ReuseableBuffer<bufferSize>* getBuffer() {
+            ManagedBuffer* getBuffer() {
                 std::unique_lock firstLock(firstMutex,std::defer_lock);
                 std::unique_lock lastLock(lastMutex,std::defer_lock);
                 //std::unique_lock firstLock(lastMutex);
@@ -101,7 +113,7 @@ namespace JNet {
                     std::lock(firstLock,lastLock);
 
                 if (first == nullptr) {
-                    ReuseableBuffer<bufferSize>* buffer = new ManagedBuffer;
+                    ManagedBuffer* buffer = new ManagedBuffer;
                     managedBuffers.push_back(buffer);
                     if (debugFlagActive<DebugFlag::bufferManagerDebug>()) 
                         std::cout << "returning new buffer with id: " << buffer <<"\n";

@@ -12,35 +12,35 @@ namespace JNet {
         /** @brief Wrapper of a ReuseableBuffer to be used as Packet
         * @attention Needs to be returned to the client it was created by
         */
-        template <const uint32_t reuseableBufferSize = bufferSize>
+        template <const uint32_t reuseableBufferSize = bufferSize, bool includeEndpoint = false>
         class ReuseablePacket {
             friend class JNet::Client;
         public:
             ReuseablePacket() = delete;
-            ReuseablePacket(const ReuseablePacket<reuseableBufferSize>& other) = delete;
-            ReuseablePacket(const ReuseablePacket<reuseableBufferSize>&& other);
-            ReuseablePacket<>& operator= (const ReuseablePacket<reuseableBufferSize>& other) = delete;
+            ReuseablePacket(const ReuseablePacket<reuseableBufferSize, includeEndpoint>& other) = delete;
+            ReuseablePacket(const ReuseablePacket<reuseableBufferSize, includeEndpoint>&& other);
+            ReuseablePacket<>& operator= (const ReuseablePacket<reuseableBufferSize, includeEndpoint>& other) = delete;
         public:
             Packet<reuseableBufferSize>& packet();
         private:
-            ReuseablePacket(ReuseableBuffer<reuseableBufferSize>* buffer);
+            ReuseablePacket(ReuseableBuffer<reuseableBufferSize, includeEndpoint>* buffer);
         private:
             ReuseableBuffer<reuseableBufferSize>* buffer;
         };
 
 
-        template <uint32_t reuseableBufferSize>
-        Packet<reuseableBufferSize>& ReuseablePacket<reuseableBufferSize>::packet() {
+        template <uint32_t reuseableBufferSize, bool includeEndpoint>
+        Packet<reuseableBufferSize>& ReuseablePacket<reuseableBufferSize, includeEndpoint>::packet() {
             return *(Packet<>*)buffer;
         }
 
-        template <uint32_t reuseableBufferSize>
-        ReuseablePacket<reuseableBufferSize>::ReuseablePacket(ReuseableBuffer<reuseableBufferSize>* buffer) {
+        template <uint32_t reuseableBufferSize, bool includeEndpoint>
+        ReuseablePacket<reuseableBufferSize, includeEndpoint>::ReuseablePacket(ReuseableBuffer<reuseableBufferSize, includeEndpoint>* buffer) {
             this->buffer = buffer;
         }
 
-        template <uint32_t reuseableBufferSize>
-        ReuseablePacket<reuseableBufferSize>::ReuseablePacket(const ReuseablePacket<reuseableBufferSize>&& other) {
+        template <uint32_t reuseableBufferSize, bool includeEndpoint>
+        ReuseablePacket<reuseableBufferSize, includeEndpoint>::ReuseablePacket(const ReuseablePacket<reuseableBufferSize, includeEndpoint>&& other) {
             buffer = other.buffer;
         }
     }

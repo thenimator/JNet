@@ -1,4 +1,3 @@
-#pragma once
 #include "Client.hpp"
 
 using namespace JNet;
@@ -8,7 +7,7 @@ Client::Client(Context &givenContext) : context(givenContext), udpSocket(givenCo
 }
 
 Client::~Client() {
-    sender.join();
+    udpSender.join();
 }
 
 udp::ReuseablePacket<> JNet::Client::getPacket() {
@@ -25,7 +24,7 @@ void JNet::Client::sendPacket(udp::ReuseablePacket<> packet) {
     }
     outgoingPackets.push(packet.buffer);
 
-    boost::asio::post(sender, boost::bind(&Client::sendNextPacketToHost,this));
+    boost::asio::post(udpSender, boost::bind(&Client::sendNextPacketToHost,this));
 }
 
 void JNet::Client::connect(const std::string &host) {

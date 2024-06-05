@@ -13,7 +13,10 @@
 namespace JNet {
     class Client {
     public:
-        typedef udp::ReuseableBuffer<> ReuseableBuffer;
+        typedef udp::ReuseableBuffer<udp::bufferSize,false> ReuseableBuffer;
+        typedef udp::BufferManager<udp::bufferSize, SafetyFlag::threadSafe, false> BufferManager;
+        typedef udp::ReuseablePacket<udp::bufferSize, false> ReuseablePacket;
+        typedef udp::Packet<udp::bufferSize, false> Packet;
         
     public:
         Client(Context& givenContext);
@@ -27,17 +30,17 @@ namespace JNet {
     private:
         Context& context;
         std::string host = "";
-        boost::asio::thread_pool sender{1};
         uint64_t udpMessageCount = 0;
 
 
+        boost::asio::thread_pool udpSender{1};
         udp::Socket udpSocket;
         udp::Endpoint udpEndpoint;
         udp::Resolver udpResolver;
         std::thread udpReceiver;
-        ts::Queue<std::unique_ptr<udp::Packet<>>> incomingPackets;
+        ts::Queue<std::unique_ptr<Packet>> incomingPackets;
         ts::Queue<ReuseableBuffer*> outgoingPackets;
-        ts::BufferManager<> bufferManager;
+        BufferManager bufferManager;
 
 
 
