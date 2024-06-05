@@ -14,8 +14,7 @@ namespace JNet {
         */
         template <const uint32_t reuseableBufferSize = bufferSize>
         class ReuseablePacket {
-            template<typename InternetProtocol>
-            friend class JNet::BasicClient;
+            friend class JNet::Client;
         public:
             ReuseablePacket() = delete;
             ReuseablePacket(const ReuseablePacket<reuseableBufferSize>& other) = delete;

@@ -1,8 +1,9 @@
 #include "Messages/communication.hpp"
-#include "UDP/Client.hpp"
+#include "Client.hpp"
 #include "UDP/Server.hpp"
 #include "defines.hpp"
 #include <iostream>
+
 
 #if __has_include("buildType.hpp") 
 # include "buildType.hpp"
@@ -22,9 +23,9 @@ int main(int argc, char** argv) {
             return -1;
         }
         std::string host(argv[1]);
-        JNet::udp::Client client(context);
+        JNet::Client client(context);
         client.connect(host);
-        JNet::udp::ReuseablePacket<0x1000> packet = std::move(client.getPacket());
+        JNet::udp::ReuseablePacket<JNet::udp::bufferSize> packet = std::move(client.getPacket());
         std::string YES = "Hallo Mama!";
         memcpy(packet.packet().getData(),YES.data(),YES.size());
         packet.packet().setId(8);

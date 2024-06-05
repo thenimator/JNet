@@ -9,7 +9,7 @@ namespace JNet {
         template <uint32_t TBufferSize = bufferSize, safetyFlags flags = SafetyFlag::unSafe>
         class Packet {
             static_assert(flags == SafetyFlag::unSafe || flags == SafetyFlag::runtimeBoundsChecks, "Given flags aren't supported");
-            static_assert(TBufferSize <= 0x10000, "TBufferSize is greater than max udp packet size. Data loss is guaranteed");
+            static_assert(TBufferSize <= bufferSize, "TBufferSize is greater than max udp packet size. Data loss is guaranteed");
             static_assert(TBufferSize >= sizeof(Header), "TBufferSize must be greater than sizeof(Header)");
             //friend std::ostream& operator<< (std::ostream& os, const Packet<TBufferSize, flags>& packet);
         public:
