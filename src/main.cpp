@@ -3,6 +3,7 @@
 #include "Server.hpp"
 #include "defines.hpp"
 #include <iostream>
+#include "UDP/udp.hpp"
 
 
 #if __has_include("buildType.hpp") 
@@ -14,7 +15,7 @@
 #endif
 
 
-void packetPrinter(JNet::Server* server) {
+void packetPrinter(JNet::Server<JNet::udp::Packet<>>* server) {
     std::cout << "Packetprinter called\n";
     while(server->isRunning()) {
         if (server->hasAvailablePacket()) {
@@ -30,7 +31,7 @@ void packetPrinter(JNet::Server* server) {
     std::cout << "Exiting packetprinter\n";
 }
 
-void clientPacketPrinter(JNet::Client* client) {
+void clientPacketPrinter(JNet::Client<JNet::udp::Packet<>>* client) {
     std::cout << "Packetprinter called\n";
     while(client->hasConnection()) {
         if (client->hasAvailablePacket()) {
@@ -52,13 +53,13 @@ int main(int argc, char** argv) {
         }
         std::string host(argv[1]);
         std::string port = "16632";
-        JNet::Client client;
+        JNet::Client<JNet::udp::Packet<>> client;
         client.connect(host, port);
         uint32_t messageCount = 0;
         std::string YES = "Hello world!";
         std::thread packetReceiver = std::thread(boost::bind(&clientPacketPrinter, &client));
         while (messageCount < 1) {
-            JNet::udp::ReuseablePacket<JNet::udp::bufferSize> packet = std::move(client.getPacket());
+            JNet::udp::ReuseablePacket<JNet::udp::Packet<>, JNet::udp::bufferSize> packet = std::move(client.getPacket());
             memcpy(packet.data().wrapper().getData(),YES.data(),YES.size());
             packet.data().wrapper().setSize(YES.size());
             packet.data().wrapper().setMessageType(JNet::MessageType::Unset);
@@ -71,7 +72,7 @@ int main(int argc, char** argv) {
         packetReceiver.join();
     }
     if (BUILDTYPE == BuildType::Server) {
-        JNet::Server server(16632);
+        JNet::Server<JNet::udp::Packet<>> server(16632);
         std::cout << "Created server\n";
         bool running = true;
         server.run();

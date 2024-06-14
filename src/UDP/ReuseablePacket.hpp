@@ -13,37 +13,45 @@ namespace JNet {
         /** @brief Wrapper of a ReuseableBuffer to be used as Packet
         * @attention Needs to be returned to the client/server it was created by
         */
-        template <const uint32_t reuseableBufferSize = bufferSize, bool includeEndpoint = false>
+        template <class TWrapper, uint32_t reuseableBufferSize = bufferSize, bool includeEndpoint = false>
         class ReuseablePacket {
+            template<class TPacketWrapper>
             friend class JNet::Client;
+            template<class TPacketWrapper>
             friend class JNet::Server;
         public:
             ReuseablePacket() = delete;
-            ReuseablePacket(const ReuseablePacket<reuseableBufferSize, includeEndpoint>& other) = delete;
-            ReuseablePacket(const ReuseablePacket<reuseableBufferSize, includeEndpoint>&& other);
-            ReuseablePacket<reuseableBufferSize,includeEndpoint>& operator= (const ReuseablePacket<reuseableBufferSize, includeEndpoint>& other) = delete;
+            ReuseablePacket(const ReuseablePacket<TWrapper, reuseableBufferSize, includeEndpoint>& other) = delete;
+            ReuseablePacket(const ReuseablePacket<TWrapper, reuseableBufferSize, includeEndpoint>&& other);
+            ReuseablePacket<TWrapper, reuseableBufferSize,includeEndpoint>& operator= (const ReuseablePacket<TWrapper, reuseableBufferSize, includeEndpoint>& other) = delete;
         public:
             ReuseableBuffer<reuseableBufferSize, includeEndpoint>& data();
+            TWrapper& wrapper();
         private:
             ReuseablePacket(ReuseableBuffer<reuseableBufferSize, includeEndpoint>* buffer);
         private:
             ReuseableBuffer<reuseableBufferSize, includeEndpoint>* buffer;
         };
 
+        template<class TWrapper, uint32_t reuseableBufferSize, bool includeEndpoint>
+        TWrapper& ReuseablePacket<TWrapper, reuseableBufferSize, includeEndpoint>::wrapper() {
+            return *(TWrapper*)buffer;
+        }
 
-        template <uint32_t reuseableBufferSize, bool includeEndpoint>
-        ReuseableBuffer<reuseableBufferSize, includeEndpoint>& ReuseablePacket<reuseableBufferSize, includeEndpoint>::data() {
+
+        template <class TWrapper,uint32_t reuseableBufferSize, bool includeEndpoint>
+        ReuseableBuffer<reuseableBufferSize, includeEndpoint>& ReuseablePacket<TWrapper, reuseableBufferSize, includeEndpoint>::data() {
             //return *(Packet<reuseableBufferSize, includeEndpoint>*)buffer->buffer;
             return *buffer;
         }
 
-        template <uint32_t reuseableBufferSize, bool includeEndpoint>
-        ReuseablePacket<reuseableBufferSize, includeEndpoint>::ReuseablePacket(ReuseableBuffer<reuseableBufferSize, includeEndpoint>* buffer) {
+        template <class TWrapper, uint32_t reuseableBufferSize, bool includeEndpoint>
+        ReuseablePacket<TWrapper, reuseableBufferSize, includeEndpoint>::ReuseablePacket(ReuseableBuffer<reuseableBufferSize, includeEndpoint>* buffer) {
             this->buffer = buffer;
         }
 
-        template <uint32_t reuseableBufferSize, bool includeEndpoint>
-        ReuseablePacket<reuseableBufferSize, includeEndpoint>::ReuseablePacket(const ReuseablePacket<reuseableBufferSize, includeEndpoint>&& other) {
+        template <class TWrapper, uint32_t reuseableBufferSize, bool includeEndpoint>
+        ReuseablePacket<TWrapper, reuseableBufferSize, includeEndpoint>::ReuseablePacket(const ReuseablePacket<TWrapper, reuseableBufferSize, includeEndpoint>&& other) {
             buffer = other.buffer;
         }
     }
