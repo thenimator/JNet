@@ -17,12 +17,4 @@ namespace JNet {
         MessageType messageType = MessageType::Unset;
     };
 
-    
-
-
-
-    
-    //std::unique_ptr<Message> bufferToMessage(void* buffer);
-
-
 }
