@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
         packetReceiver.join();
     }
     if (BUILDTYPE == BuildType::Server) {
-        JNet::Server server;
+        JNet::Server server(16632);
         std::cout << "Created server\n";
         bool running = true;
         server.run();
