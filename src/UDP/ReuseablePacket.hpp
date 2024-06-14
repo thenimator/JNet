@@ -4,34 +4,37 @@
 #include "Buffer/buffer.hpp"
 #include "packet.hpp"
 #include "../ClientDeclaration.hpp"
+#include "../ServerDeclaration.hpp"
 
 namespace JNet {
     namespace udp {
 
 
         /** @brief Wrapper of a ReuseableBuffer to be used as Packet
-        * @attention Needs to be returned to the client it was created by
+        * @attention Needs to be returned to the client/server it was created by
         */
         template <const uint32_t reuseableBufferSize = bufferSize, bool includeEndpoint = false>
         class ReuseablePacket {
             friend class JNet::Client;
+            friend class JNet::Server;
         public:
             ReuseablePacket() = delete;
             ReuseablePacket(const ReuseablePacket<reuseableBufferSize, includeEndpoint>& other) = delete;
             ReuseablePacket(const ReuseablePacket<reuseableBufferSize, includeEndpoint>&& other);
-            ReuseablePacket<>& operator= (const ReuseablePacket<reuseableBufferSize, includeEndpoint>& other) = delete;
+            ReuseablePacket<reuseableBufferSize,includeEndpoint>& operator= (const ReuseablePacket<reuseableBufferSize, includeEndpoint>& other) = delete;
         public:
-            Packet<reuseableBufferSize>& packet();
+            ReuseableBuffer<reuseableBufferSize, includeEndpoint>& data();
         private:
             ReuseablePacket(ReuseableBuffer<reuseableBufferSize, includeEndpoint>* buffer);
         private:
-            ReuseableBuffer<reuseableBufferSize>* buffer;
+            ReuseableBuffer<reuseableBufferSize, includeEndpoint>* buffer;
         };
 
 
         template <uint32_t reuseableBufferSize, bool includeEndpoint>
-        Packet<reuseableBufferSize>& ReuseablePacket<reuseableBufferSize, includeEndpoint>::packet() {
-            return *(Packet<>*)buffer;
+        ReuseableBuffer<reuseableBufferSize, includeEndpoint>& ReuseablePacket<reuseableBufferSize, includeEndpoint>::data() {
+            //return *(Packet<reuseableBufferSize, includeEndpoint>*)buffer->buffer;
+            return *buffer;
         }
 
         template <uint32_t reuseableBufferSize, bool includeEndpoint>

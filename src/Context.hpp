@@ -11,7 +11,10 @@ namespace JNet {
         ~Context();
         void async_run();
         void terminate();
-        void shutDown(std::chrono::milliseconds delay = std::chrono::milliseconds(0), std::chrono::milliseconds finishTime = std::chrono::milliseconds(5000));
+        /** @brief shuts down the JNet::Context
+         * @brief is guaranteed to wait for at least finishTIme for outstanding operations
+        */
+        void shutDown(std::chrono::microseconds finishTime = std::chrono::microseconds(100), std::chrono::microseconds delay = std::chrono::microseconds(0));
         const boost::asio::io_context& getAsioContext() const;  
         boost::asio::io_context& getAsioContext();
     private:
