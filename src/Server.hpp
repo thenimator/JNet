@@ -7,18 +7,18 @@
 #include "UDP/udp.hpp"
 #include "UDP/Buffer/BufferManager.hpp"
 #include "UDP/ReuseablePacket.hpp"
+#include "UDP/PacketWrapperChecker.hpp"
 
 
 namespace JNet {
 
         
     template<class TPacketWrapper>
-    class Server {
+    class Server : udp::PacketWrapperChecker<TPacketWrapper> {
     public:
         using ReuseableBuffer = udp::ReuseableBuffer<udp::bufferSize,true>;
         using BufferManager = udp::BufferManager<udp::bufferSize, SafetyFlag::threadSafe, true>;
         using ReuseablePacket = udp::ReuseablePacket<TPacketWrapper ,udp::bufferSize, true>;
-        using Packet = udp::Packet<udp::bufferSize>;
     public:
         Server(uint16_t port);
         void run();

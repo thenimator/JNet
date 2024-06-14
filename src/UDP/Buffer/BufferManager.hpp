@@ -3,37 +3,11 @@
 #include "../../defines.hpp"
 #include "../../Flags/flags.hpp"
 #include "../packet.hpp"
+#include "BufferManagerDeclaration.hpp"
+#include "ReuseableBuffer.hpp"
 
 namespace JNet {
     namespace udp {
-        template <uint32_t bufferSize = bufferSize, safetyFlags flags = 0, bool includeEndpoint = false>
-        class BufferManager;
-        
-        template<bool c>
-        struct ReuseableBufferBase { };
-
-        template<>
-        struct ReuseableBufferBase<true> {
-            Endpoint endpoint;
-        };
-
-
-
-        template <uint32_t reuseableBufferSize = bufferSize, bool TIncludeEndpoint = false>
-        class ReuseableBuffer : public ReuseableBufferBase<TIncludeEndpoint>{
-            template <uint32_t bufferSize, safetyFlags flags, bool includeEndpoint>
-            friend class BufferManager;
-        public:
-            Packet<reuseableBufferSize>& wrapper() {
-                return *(Packet<reuseableBufferSize>*)&buffer;
-            }
-        public:  
-            std::array<uint8_t, reuseableBufferSize> buffer;
-        protected:
-            ReuseableBuffer* next;
-
-            
-        };
 
         //this somehow isn't recognized as constexpr
         //try separating definition from implementation
