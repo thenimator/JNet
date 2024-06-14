@@ -25,23 +25,27 @@ void Context::async_run() {
     runContext();
 }
 
-void Context::shutDown(std::chrono::milliseconds delay, std::chrono::milliseconds finishTime) {
+void Context::shutDown(std::chrono::microseconds finishTime, std::chrono::microseconds delay ) {
+    if (debugFlagActive<DebugFlag::contextDebug>()) 
+        std::cout << "Shutdown called with " << finishTime.count() << " microseconds as finishTime\n";
     if (!running) {
         if (debugFlagActive<DebugFlag::contextDebug>()) 
             std::cerr << "Context::shutDown() called while context isn't running\n";
         return;
     }
+    
 
     std::this_thread::sleep_for(delay);
     
     asioContextWorkGuard.reset();
     while (!asio_context.stopped())  {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        finishTime -= std::chrono::milliseconds(1);
-        if (std::chrono::milliseconds(0) == finishTime) {
-            terminate();
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
+        finishTime -= std::chrono::microseconds(1);
+        if (std::chrono::microseconds(0) == finishTime) {
             std::cerr << "terminate() called due to shutdown() taking too long:\n" <<
-            "   There was still outstanding work\n”";
+            "   There was still outstanding work\n";
+            terminate();
+            
 
             return;
         }
@@ -49,6 +53,7 @@ void Context::shutDown(std::chrono::milliseconds delay, std::chrono::millisecond
     runner.join();
     asio_context.reset();
     running = false;
+    
     if (debugFlagActive<DebugFlag::contextDebug>()) 
         std::cout << "Context is no longer running\n";
 }
@@ -65,6 +70,7 @@ void Context::terminate() {
     runner.join();
     asio_context.reset();
     running = false;
+    
     if (debugFlagActive<DebugFlag::contextDebug>()) 
         std::cout << "Context is no longer running\n";
 }

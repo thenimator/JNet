@@ -6,6 +6,7 @@
 #include "UDP/packet.hpp"
 #include "UDP/udp.hpp"
 #include "UDP/Buffer/BufferManager.hpp"
+#include "UDP/ReuseablePacket.hpp"
 
 
 namespace JNet {
@@ -14,30 +15,44 @@ namespace JNet {
 
     class Server {
     public:
-        typedef udp::ReuseableBuffer<udp::bufferSize,true> ReuseableBuffer;
-        typedef udp::BufferManager<udp::bufferSize, SafetyFlag::threadSafe, true> BufferManager;
+        using ReuseableBuffer = udp::ReuseableBuffer<udp::bufferSize,true>;
+        using BufferManager = udp::BufferManager<udp::bufferSize, SafetyFlag::threadSafe, true>;
+        using ReuseablePacket = udp::ReuseablePacket<udp::bufferSize, true>;
+        using Packet = udp::Packet<udp::bufferSize>;
     public:
-        Server() = delete;
-        Server(JNet::Context& context);
+        Server();
         void run();
-        void close();
+        void close(std::chrono::microseconds finishTime = std::chrono::microseconds(100));
+        /** gets and empty packet which can be send using this server
+        */        
+        ReuseablePacket getEmptyPacket();
+        void sendPacket(ReuseablePacket packet);
+        void setPacketCallback(void (*callback) ()); //uhhh yeah that's not how programming works
+        bool hasAvailablePacket();
+        ReuseablePacket receiveIncomingPacket();
+        void returnPacket(ReuseablePacket packet);
+        bool isRunning();
         ~Server();
     private:
         
         void receive();
-        void respond(const boost::system::error_code& e, size_t messageSize);
-        void handleMessage(const boost::system::error_code& e, size_t messageSize);
         void handlePacketReceive(ReuseableBuffer* recycleableBuffer ,const boost::system::error_code& e, size_t messageSize);
+        void handleSentPacket(ReuseableBuffer* recycleableBuffer, const boost::system::error_code& e, std::size_t messageSize);
+        void sendNextPacket(); 
     private:
 
         
+        JNet::Context context;
         bool shouldClose = false;
-        uint64_t messageCount = 0;
 
+        void (*callback) () = [](){};
         BufferManager bufferManager;
         udp::Socket udpSocket;
         udp::Endpoint udpEndpoint;
-        JNet::ts::Queue<udp::Packet<>> incomingPackets;
+        JNet::ts::Queue<ReuseableBuffer*> incomingPackets;
+        JNet::ts::Queue<ReuseableBuffer*> outgoingPackets;
+        boost::asio::thread_pool udpSender{1};
+
 
     };
     

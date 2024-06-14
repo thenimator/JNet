@@ -2,6 +2,7 @@
 #include "../udp.hpp"
 #include "../../defines.hpp"
 #include "../../Flags/flags.hpp"
+#include "../packet.hpp"
 
 namespace JNet {
     namespace udp {
@@ -22,6 +23,10 @@ namespace JNet {
         class ReuseableBuffer : public ReuseableBufferBase<TIncludeEndpoint>{
             template <uint32_t bufferSize, safetyFlags flags, bool includeEndpoint>
             friend class BufferManager;
+        public:
+            Packet<reuseableBufferSize>& packet() {
+                return *(Packet<reuseableBufferSize>*)&buffer;
+            }
         public:  
             std::array<uint8_t, reuseableBufferSize> buffer;
         protected:
@@ -89,12 +94,8 @@ namespace JNet {
                     last = buffer;
                     return;
                 }
-                if (debugFlagActive<DebugFlag::bufferManagerDebug>()) 
-                    std::cout << "Appending Buffer...\n";
                 last->next = buffer;
                 last = buffer;
-                if (debugFlagActive<DebugFlag::bufferManagerDebug>()) 
-                    std::cout << "Appended Buffer\n";
 
 
                 
@@ -103,26 +104,27 @@ namespace JNet {
 
             ManagedBuffer* getBuffer() {
                 std::unique_lock firstLock(firstMutex,std::defer_lock);
-                std::unique_lock lastLock(lastMutex,std::defer_lock);
-                //std::unique_lock firstLock(lastMutex);
-                //std::unique_lock lastLock(lastMutex);
-                //std::cout << "Here\n";
-                if (debugFlagActive<DebugFlag::bufferManagerDebug>()) 
-                    std::cout << "In getBuffer\n";         
+                std::unique_lock lastLock(lastMutex,std::defer_lock);     
                 if (hasFlag<SafetyFlag::threadSafe>(flags))  
                     std::lock(firstLock,lastLock);
 
                 if (first == nullptr) {
                     ManagedBuffer* buffer = new ManagedBuffer;
                     managedBuffers.push_back(buffer);
-                    if (debugFlagActive<DebugFlag::bufferManagerDebug>()) 
-                        std::cout << "returning new buffer with id: " << buffer <<"\n";
+                    if (debugFlagActive<DebugFlag::bufferManagerDebug>())  {
+                        std::stringstream ss;
+                        ss << "returning new buffer with id: " << buffer <<"\n";
+                        std::cout << ss.str();
+                    }
                     return buffer;
                 }
-                //std::cout << "Here3\n";
                 ManagedBuffer* returnBuffer = first;
-                if (debugFlagActive<DebugFlag::bufferManagerDebug>()) 
-                    std::cout << "Returning existing buffer with id: " << returnBuffer <<"\n";
+                if (debugFlagActive<DebugFlag::bufferManagerDebug>()) {
+                    std::stringstream ss;
+                    ss << "Returning existing buffer with id: " << returnBuffer <<"\n";
+                    std::cout << ss.str();
+                }
+                    
                 if (hasFlag<SafetyFlag::threadSafe>(flags)) {
                     //firstLock.unlock();
                     //std::lock(firstLock,lastLock);

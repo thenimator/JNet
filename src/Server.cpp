@@ -3,115 +3,116 @@
 
 using namespace JNet;
 
-Server::Server(JNet::Context& context) : udpSocket(context.getAsioContext(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), PORT)) {
+Server::Server() : udpSocket(context.getAsioContext(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), PORT)) {
 
 }
 
 void Server::run() {
-    /*try {
-        while (!shouldClose) {
-            std::array<bool,sizeof(Message)> receivedData;
-            ip::udp::endpoint remoteEndpoint;
-            socket.receive_from(boost::asio::buffer(receivedData), remoteEndpoint);
-            std::array<uint8_t, sizeof(Message)> data;
-            Message message;
-            message.id = (*(Header*)&receivedData).id;
-
-            memcpy(&data,&message,sizeof(Message));
-
-            boost::system::error_code ignoredError;
-            socket.send_to(boost::asio::buffer(data),remoteEndpoint,0,ignoredError);
-        }
-    } catch (std::exception& e) {
-        std::cerr << "What:" << std::endl;
-        std::cerr << e.what() << std::endl;
-        std::cerr << "EndWhat" << std::endl;
-    }*/
     receive();
-    
-}
-
-void Server::handleMessage(const boost::system::error_code& e, size_t messageSize) {
-    
-}
-
-void Server::respond(const boost::system::error_code& e, size_t messageSize) {
-    /*Message response; 
-    response.header.id = messageCount;
-    response.header.messageType = MessageType::Broadcast;
-    std::string answer = "Data could be here";
-    response.header.size = answer.size();
-    response.body.resize(answer.size());
-    memcpy(response.body.data(),answer.data(),answer.size());
-    messageCount++;
-    socket.async_send_to(boost::asio::buffer(*(std::array<char,1024>*)&response),remoteEndpoint,std::bind(&Server::handleMessage, this, e, messageSize));*/
-
+    context.async_run();
 }
 
 void Server::receive() {
     ReuseableBuffer* buffer = bufferManager.getBuffer();
-
+    auto callback = boost::bind(&Server::handlePacketReceive, this, buffer,boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred);
 
     udpSocket.async_receive_from(
     boost::asio::buffer(buffer->buffer), 
     buffer->endpoint, 
-    boost::bind(&Server::handlePacketReceive, this, buffer,boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred)
+    callback
     );
-    if (debugFlagActive<DebugFlag::serverDebug>()) 
-        std::cout << "Receiving from: " <<
-        udpSocket.local_endpoint() << "\n";
-
-
-    if (debugFlagActive<DebugFlag::serverDebug>()) {
-        if (udpSocket.is_open()) {
-            std::cout << "Socket is open\n";
-        } else {
-            std::cout << "Socket is closed\n";
-        }
-        
-    }
 }
 
 void Server::handlePacketReceive(ReuseableBuffer* recycleableBuffer,const boost::system::error_code& e, size_t messageSize) {
-    if (debugFlagActive<DebugFlag::serverDebug>()) {
-        std::stringstream ss;
-        ss << "Started handling receive for " << messageSize << " bytes\n";
-        std::cout << ss.str();
+    if (shouldClose) {
+        if (debugFlagActive<DebugFlag::serverDebug>()) 
+            std::cout << "Unexecuted receive due to server closing\n";
+        bufferManager.recycleBuffer(recycleableBuffer);
+        return;
     }
-        
-    if (!shouldClose) {
-        if (!e.failed()) {
-            if (debugFlagActive<DebugFlag::serverDebug>()) 
-                std::cout << "Hasn't failed" << std::endl;
-            udp::Packet<>& packet = reinterpret_cast<udp::Packet<>&>(recycleableBuffer->buffer);
-            //messages.push(receivedMessage);
-            if (debugFlagActive<DebugFlag::serverDebug>()) 
-                std::cout << "Aquired message" << std::endl;
-            //receive shhould be moved back here
-            //receive();
-            respond(e, messageSize);
-            if (debugFlagActive<DebugFlag::serverDebug>()) 
-                std::cout << packet.debugString();
-            receive();
-            return;
-        }
-
-        std::cerr << "Error:\n" << e.message() << std::endl;
+    receive();
+    if (e.failed()) {
+        std::cerr << "Error:\n" << e.message() << "\n";
+        bufferManager.recycleBuffer(recycleableBuffer);
+        return;
     }
     
+    
     if (debugFlagActive<DebugFlag::serverDebug>()) 
-        std::cout << "Unexecuted receive\n";
+        std::cout << "Handling received packet" << "\n";
 
 
+    
+    //if (debugFlagActive<DebugFlag::serverDebug>()) 
+    //    std::cout << recycleableBuffer->packet().debugString();
+    incomingPackets.push(recycleableBuffer);
+    
 }
 
-void Server::close() {
+void JNet::Server::handleSentPacket(ReuseableBuffer *recycleableBuffer, const boost::system::error_code &e, std::size_t messageSize) {
+    if (e.failed()) {
+        std::stringstream ss;
+        ss << "Error when responding:\n" << e.message() << "\n";
+        std::cerr << ss.str();     
+    }
+    if (debugFlagActive<DebugFlag::serverDebug>()) 
+        std::cout << "Successfully responded!\n";
+    bufferManager.recycleBuffer(recycleableBuffer);
+}
+
+void JNet::Server::sendNextPacket() {
+    ReuseableBuffer* sendBuffer = outgoingPackets.consumeFront();
+    auto callBack = boost::bind(
+        &Server::handleSentPacket
+        ,this
+        ,sendBuffer
+        ,boost::asio::placeholders::error()
+        ,boost::asio::placeholders::bytes_transferred()
+    );
+    udpSocket.async_send_to(boost::asio::buffer(sendBuffer->buffer),sendBuffer->endpoint,callBack);
+}
+
+void Server::close(std::chrono::microseconds finishTime) {
     shouldClose = true;
+    context.shutDown(finishTime);
+    outgoingPackets.clear();
+    incomingPackets.clear();
+    udpSender.join();
+}
+
+Server::ReuseablePacket Server::getEmptyPacket() {
+    return ReuseablePacket(bufferManager.getBuffer());
+}
+
+void JNet::Server::sendPacket(ReuseablePacket packet) {
+    outgoingPackets.push(packet.buffer);
+
+    boost::asio::post(udpSender, boost::bind(&Server::sendNextPacket,this));
+}
+
+void JNet::Server::setPacketCallback(void (*callback)()) {
+    this->callback = callback;
+}
+
+bool JNet::Server::hasAvailablePacket() {
+    return !incomingPackets.empty();
+}
+
+Server::ReuseablePacket JNet::Server::receiveIncomingPacket() {
+    return ReuseablePacket(incomingPackets.consumeFront());
+}
+
+void JNet::Server::returnPacket(ReuseablePacket packet) {
+    bufferManager.recycleBuffer(packet.buffer);
+}
+
+bool JNet::Server::isRunning() {
+    return !shouldClose;
 }
 
 Server::~Server() {
     if (!shouldClose) {
-        std::cerr << "You should call close() before destroying the object" << std::endl;
-        shouldClose = true;
+        std::cerr << "You should call close() before destroying a server object\n";
+        close();
     }
 }

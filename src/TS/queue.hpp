@@ -51,6 +51,11 @@ namespace JNet {
                 std::scoped_lock lock(dataMutex);
                 data.pop_front();
             }
+
+            void clear() {
+                std::scoped_lock lock(dataMutex);
+                data.clear();
+            }
         private:
             std::deque<T> data;
             std::mutex dataMutex;

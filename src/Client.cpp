@@ -2,19 +2,21 @@
 
 using namespace JNet;
 
-Client::Client(Context &givenContext) : context(givenContext), udpSocket(givenContext.getAsioContext()), udpResolver(context.getAsioContext()) {
+Client::Client() : udpSocket(context.getAsioContext()), udpResolver(context.getAsioContext()) {
 
 }
 
 Client::~Client() {
-    udpSender.join();
+    if (!shouldDisconnect)  {
+        std::cerr << "You should call disnonnect() before destroying a client object\n";
+    }
 }
 
-udp::ReuseablePacket<> JNet::Client::getPacket() {
-    return udp::ReuseablePacket<>(bufferManager.getBuffer());
+Client::ReuseablePacket JNet::Client::getPacket() {
+    return Client::ReuseablePacket(bufferManager.getBuffer());
 }
 
-void JNet::Client::sendPacket(udp::ReuseablePacket<> packet) {
+void JNet::Client::sendPacket(Client::ReuseablePacket packet) {
     if (host == "") {
         if (debugFlagActive<DebugFlag::clientDebug>()) 
             std::cout << "No host given but packet send attempted\n";
@@ -28,6 +30,7 @@ void JNet::Client::sendPacket(udp::ReuseablePacket<> packet) {
 }
 
 void JNet::Client::connect(const std::string &host) {
+    context.async_run();
     this->host = host;
     resolveHost();
     try {
@@ -38,10 +41,72 @@ void JNet::Client::connect(const std::string &host) {
     } catch (boost::system::system_error& e) {
         std::cerr << e.what() << std::endl;
     }
+    receive();
 }
 
-std::unique_ptr<udp::Packet<>> JNet::Client::receiveMessage() {
-    return std::unique_ptr<udp::Packet<>>();
+void JNet::Client::disconnect(std::chrono::microseconds finishDuration) {
+    shouldDisconnect = true;
+    context.shutDown(finishDuration);
+    incomingPackets.clear();
+    outgoingPackets.clear();
+    udpSender.join();
+}
+
+bool JNet::Client::hasAvailablePacket() {
+    return !incomingPackets.empty();
+}
+
+Client::ReuseablePacket JNet::Client::receiveIncomingPacket() {
+    return ReuseablePacket(incomingPackets.consumeFront());
+}
+
+void JNet::Client::returnPacket(ReuseablePacket packet) {
+    bufferManager.recycleBuffer(packet.buffer);
+}
+
+bool JNet::Client::hasConnection()
+{
+    return !shouldDisconnect;
+}
+
+void JNet::Client::receive()
+{
+    ReuseableBuffer* buffer = bufferManager.getBuffer();
+    if (debugFlagActive<DebugFlag::clientDebug>()) {
+        std::stringstream ss;
+        ss << "Using buffer with id: " << buffer << " as receiveBuffer\n";
+        std::cout << ss.str();
+    }
+    auto callback = boost::bind(&Client::handlePacketReceive, this, buffer,boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred);
+
+    udpSocket.async_receive(
+    boost::asio::buffer(buffer->buffer), 
+    callback
+    );
+}
+
+void JNet::Client::handlePacketReceive(ReuseableBuffer *recycleableBuffer, const boost::system::error_code &e, size_t messageSize) {
+    if (debugFlagActive<DebugFlag::clientDebug>()) {
+        std::stringstream ss;
+        ss << "Started handling receive for " << messageSize << " bytes\n";
+        std::cout << ss.str();
+    }
+
+    /*if (shouldClose) {
+        if (debugFlagActive<DebugFlag::serverDebug>()) 
+            std::cout << "Unexecuted receive due to server closing\n";
+        bufferManager.recycleBuffer(recycleableBuffer);
+        return;
+    }*/
+    receive();
+    if (e.failed()) {
+        std::cerr << "Error:\n" << e.message() << "\n";
+        bufferManager.recycleBuffer(recycleableBuffer);
+        return;
+    }
+    if (debugFlagActive<DebugFlag::clientDebug>()) 
+        std::cout << recycleableBuffer->packet().debugString();
+    incomingPackets.push(recycleableBuffer);
 }
 
 void JNet::Client::resolveHost() {
@@ -78,4 +143,5 @@ void JNet::Client::sendNextPacketToHost() {
     
         std::cout << ss.str();
     }
+    bufferManager.recycleBuffer(sendBuffer);
 }

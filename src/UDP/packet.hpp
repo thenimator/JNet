@@ -6,12 +6,14 @@
 
 namespace JNet {
     namespace udp {
+        /** @brief Wrapper for a buffer
+         *  
+        */
         template <uint32_t TBufferSize = bufferSize, safetyFlags flags = SafetyFlag::unSafe>
         class Packet {
             static_assert(flags == SafetyFlag::unSafe || flags == SafetyFlag::runtimeBoundsChecks, "Given flags aren't supported");
             static_assert(TBufferSize <= bufferSize, "TBufferSize is greater than max udp packet size. Data loss is guaranteed");
             static_assert(TBufferSize >= sizeof(Header), "TBufferSize must be greater than sizeof(Header)");
-            //friend std::ostream& operator<< (std::ostream& os, const Packet<TBufferSize, flags>& packet);
         public:
             Packet();
             uint64_t getId() const; 
@@ -37,43 +39,41 @@ namespace JNet {
 
 
         template <uint32_t TBufferSize, safetyFlags flags>
-        std::string Packet<TBufferSize,flags>::debugString() {
+        std::string Packet<TBufferSize, flags>::debugString() {
             std::stringstream ss;
             ss << "Packet id: " << getId() << "\n";
             ss << "Packet size: " << getSize() << "\n";
             std::string out((char*)getData(), getSize());
-            ss  << "Message:\n" << out << "\n";
-            std::string secondOut((char*)&getBuffer(), getSize());
-            ss  << "\n\nMessage:\n" << secondOut << "\n";
+            ss  << "Message:\n" << out << "\n\n";
             return ss.str();
         }
 
-        template <uint32_t TBufferSize, safetyFlags flags>
-        const std::array<uint8_t,TBufferSize>& Packet<TBufferSize,flags>::getBuffer() const {
+        template <uint32_t TBufferSize,  safetyFlags flags>
+        const std::array<uint8_t,TBufferSize>& Packet<TBufferSize, flags>::getBuffer() const {
             return buffer;
         }
 
         template <uint32_t TBufferSize, safetyFlags flags>
-        MessageType Packet<TBufferSize,flags>::getMessageType() {
+        MessageType Packet<TBufferSize, flags>::getMessageType() {
             return reinterpret_cast<Header&>(buffer).messageType;
         }
         template <uint32_t TBufferSize, safetyFlags flags>
-        void Packet<TBufferSize,flags>::setMessageType(MessageType type) {
+        void Packet<TBufferSize, flags>::setMessageType(MessageType type) {
             reinterpret_cast<Header&>(buffer).messageType = type;
         }
 
         template <uint32_t TBufferSize, safetyFlags flags>
-        void* Packet<TBufferSize,flags>::getData() {
+        void* Packet<TBufferSize, flags>::getData() {
             return &buffer[sizeof(Header)];
         }
 
         template <uint32_t TBufferSize, safetyFlags flags>
-        void Packet<TBufferSize,flags>::setId(uint64_t id) {
+        void Packet<TBufferSize, flags>::setId(uint64_t id) {
             reinterpret_cast<Header&>(buffer).id = id;
         }
 
         template <uint32_t TBufferSize, safetyFlags flags>
-        uint64_t Packet<TBufferSize,flags>::getId() const {
+        uint64_t Packet<TBufferSize, flags>::getId() const {
             return reinterpret_cast<const Header&>(buffer).id;
         }
 

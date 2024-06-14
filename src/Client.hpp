@@ -11,24 +11,40 @@
 
 
 namespace JNet {
+    //TODO: Client and Server inherit from shared base class
+    //TODO: Turn client and Server into template classes to allow for customization of udp buffersize and custom wrapper
+    //TODO: Context always has to call
     class Client {
     public:
         typedef udp::ReuseableBuffer<udp::bufferSize,false> ReuseableBuffer;
         typedef udp::BufferManager<udp::bufferSize, SafetyFlag::threadSafe, false> BufferManager;
         typedef udp::ReuseablePacket<udp::bufferSize, false> ReuseablePacket;
-        typedef udp::Packet<udp::bufferSize, false> Packet;
+        typedef udp::Packet<udp::bufferSize> Packet;
         
     public:
-        Client(Context& givenContext);
+        //requires its own context
+        Client();
         Client(const Client&) = delete;
         Client& operator=(Client&) = delete;
         ~Client();
-        udp::ReuseablePacket<> getPacket();
-        void sendPacket(udp::ReuseablePacket<> packet);
+        ReuseablePacket getPacket();
+        void sendPacket(ReuseablePacket packet);
         void connect(const std::string& host);
-        std::unique_ptr<udp::Packet<>> receiveMessage();
+        /** @brief closes the currently active connection to a server
+         * @brief guaranteed to wait at least finishDuration for outstanding operations
+         */
+        void disconnect(std::chrono::microseconds finishDuration = std::chrono::microseconds(100));
+        bool hasAvailablePacket();
+        ReuseablePacket receiveIncomingPacket();
+        void returnPacket(ReuseablePacket packet);
+        bool hasConnection();
+        //std::unique_ptr<udp::Packet<>> receiveMessage();
     private:
-        Context& context;
+        void receive();
+        void handlePacketReceive(ReuseableBuffer* recycleableBuffer ,const boost::system::error_code& e, size_t messageSize);
+    private:
+        bool shouldDisconnect = true;
+        Context context;
         std::string host = "";
         uint64_t udpMessageCount = 0;
 
@@ -37,8 +53,7 @@ namespace JNet {
         udp::Socket udpSocket;
         udp::Endpoint udpEndpoint;
         udp::Resolver udpResolver;
-        std::thread udpReceiver;
-        ts::Queue<std::unique_ptr<Packet>> incomingPackets;
+        ts::Queue<ReuseableBuffer*> incomingPackets;
         ts::Queue<ReuseableBuffer*> outgoingPackets;
         BufferManager bufferManager;
 
