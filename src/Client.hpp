@@ -29,7 +29,7 @@ namespace JNet {
         ~Client();
         ReuseablePacket getPacket();
         void sendPacket(ReuseablePacket packet);
-        void connect(const std::string& host);
+        void connect(const std::string& host, const std::string& port);
         /** @brief closes the currently active connection to a server
          * @brief guaranteed to wait at least finishDuration for outstanding operations
          */
@@ -46,6 +46,7 @@ namespace JNet {
         bool shouldDisconnect = true;
         Context context;
         std::string host = "";
+        std::string port = "";
         uint64_t udpMessageCount = 0;
 
 

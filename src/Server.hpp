@@ -20,7 +20,7 @@ namespace JNet {
         using ReuseablePacket = udp::ReuseablePacket<udp::bufferSize, true>;
         using Packet = udp::Packet<udp::bufferSize>;
     public:
-        Server();
+        Server(uint16_t port);
         void run();
         void close(std::chrono::microseconds finishTime = std::chrono::microseconds(100));
         /** gets and empty packet which can be send using this server

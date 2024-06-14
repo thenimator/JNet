@@ -29,9 +29,10 @@ void JNet::Client::sendPacket(Client::ReuseablePacket packet) {
     boost::asio::post(udpSender, boost::bind(&Client::sendNextPacketToHost,this));
 }
 
-void JNet::Client::connect(const std::string &host) {
+void JNet::Client::connect(const std::string &host, const std::string& port) {
     context.async_run();
     this->host = host;
+    this->port = port;
     resolveHost();
     try {
         udpSocket.connect(udpEndpoint);
@@ -111,7 +112,7 @@ void JNet::Client::handlePacketReceive(ReuseableBuffer *recycleableBuffer, const
 
 void JNet::Client::resolveHost() {
     try {
-        udpEndpoint = *udpResolver.resolve(host,"16632").begin();
+        udpEndpoint = *udpResolver.resolve(host,port).begin();
     } catch (boost::system::system_error& e) {
         std::cout << "Error when connecting with " << host << std::endl;
         std::cerr << e.what() << std::endl;
