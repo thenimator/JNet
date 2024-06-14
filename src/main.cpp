@@ -19,10 +19,10 @@ void packetPrinter(JNet::Server* server) {
     while(server->isRunning()) {
         if (server->hasAvailablePacket()) {
             JNet::udp::ReuseablePacket packet = server->receiveIncomingPacket();
-            std::cout << packet.data().packet().debugString() << "\n";
+            std::cout << packet.data().wrapper().debugString() << "\n";
             std::string response = "Hello there random stranger!";
-            memcpy(packet.data().packet().getData(),response.data(),response.size());
-            packet.data().packet().setSize(response.size());
+            memcpy(packet.data().wrapper().getData(),response.data(),response.size());
+            packet.data().wrapper().setSize(response.size());
             server->sendPacket(std::move(packet));
         }
         std::this_thread::sleep_for(std::chrono::nanoseconds(500));
@@ -35,7 +35,7 @@ void clientPacketPrinter(JNet::Client* client) {
     while(client->hasConnection()) {
         if (client->hasAvailablePacket()) {
             JNet::udp::ReuseablePacket packet = client->receiveIncomingPacket();
-            std::cout << packet.data().packet().debugString() << "\n";
+            std::cout << packet.data().wrapper().debugString() << "\n";
             client->returnPacket(std::move(packet));
         }
         std::this_thread::sleep_for(std::chrono::nanoseconds(500));
@@ -59,10 +59,10 @@ int main(int argc, char** argv) {
         std::thread packetReceiver = std::thread(boost::bind(&clientPacketPrinter, &client));
         while (messageCount < 1) {
             JNet::udp::ReuseablePacket<JNet::udp::bufferSize> packet = std::move(client.getPacket());
-            memcpy(packet.data().packet().getData(),YES.data(),YES.size());
-            packet.data().packet().setSize(YES.size());
-            packet.data().packet().setMessageType(JNet::MessageType::Unset);
-            packet.data().packet().setId(messageCount);
+            memcpy(packet.data().wrapper().getData(),YES.data(),YES.size());
+            packet.data().wrapper().setSize(YES.size());
+            packet.data().wrapper().setMessageType(JNet::MessageType::Unset);
+            packet.data().wrapper().setId(messageCount);
             client.sendPacket(std::move(packet));
             messageCount++;
             std::this_thread::sleep_for(std::chrono::nanoseconds(1000));

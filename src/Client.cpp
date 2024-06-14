@@ -106,7 +106,7 @@ void JNet::Client::handlePacketReceive(ReuseableBuffer *recycleableBuffer, const
         return;
     }
     if (debugFlagActive<DebugFlag::clientDebug>()) 
-        std::cout << recycleableBuffer->packet().debugString();
+        std::cout << recycleableBuffer->wrapper().debugString();
     incomingPackets.push(recycleableBuffer);
 }
 
