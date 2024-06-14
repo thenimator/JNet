@@ -24,7 +24,7 @@ namespace JNet {
             template <uint32_t bufferSize, safetyFlags flags, bool includeEndpoint>
             friend class BufferManager;
         public:
-            Packet<reuseableBufferSize>& packet() {
+            Packet<reuseableBufferSize>& wrapper() {
                 return *(Packet<reuseableBufferSize>*)&buffer;
             }
         public:  
