@@ -8,19 +8,18 @@
 #include "Context.hpp"
 #include "UDP/ReuseablePacket.hpp"
 #include "UDP/udp.hpp"
+#include "UDP/PacketWrapperChecker.hpp"
 
 
 namespace JNet {
     //TODO: Client and Server inherit from shared base class
-    //TODO: Turn client and Server into template classes to allow for customization of udp buffersize and custom wrapper
-    //TODO: Context always has to call
+    //TODO: Context always has to call terminate
     template<class TPacketWrapper>
-    class Client {
+    class Client : udp::PacketWrapperChecker<TPacketWrapper> {
     public:
         using ReuseableBuffer = udp::ReuseableBuffer<udp::bufferSize,false>;
         using BufferManager = udp::BufferManager<udp::bufferSize, SafetyFlag::threadSafe, false>;
         using ReuseablePacket = udp::ReuseablePacket<TPacketWrapper, udp::bufferSize, false>;
-        using Packet = udp::Packet<udp::bufferSize>;
         
     public:
         //requires its own context
@@ -39,7 +38,6 @@ namespace JNet {
         ReuseablePacket receiveIncomingPacket();
         void returnPacket(ReuseablePacket packet);
         bool hasConnection();
-        //std::unique_ptr<udp::Packet<>> receiveMessage();
     private:
         void receive();
         void handlePacketReceive(ReuseableBuffer* recycleableBuffer ,const boost::system::error_code& e, size_t messageSize);
@@ -103,6 +101,7 @@ namespace JNet {
 
     template<class TPacketWrapper>
     void Client<TPacketWrapper>::connect(const std::string &host, const std::string& port) {
+        shouldDisconnect = false;
         context.async_run();
         this->host = host;
         this->port = port;
@@ -183,8 +182,6 @@ namespace JNet {
             bufferManager.recycleBuffer(recycleableBuffer);
             return;
         }
-        if (debugFlagActive<DebugFlag::clientDebug>()) 
-            std::cout << recycleableBuffer->wrapper().debugString();
         incomingPackets.push(recycleableBuffer);
     }
 

@@ -35,7 +35,7 @@ namespace JNet {
 
         template<class TWrapper, uint32_t reuseableBufferSize, bool includeEndpoint>
         TWrapper& ReuseablePacket<TWrapper, reuseableBufferSize, includeEndpoint>::wrapper() {
-            return *(TWrapper*)buffer;
+            return *(TWrapper*)&buffer->buffer;
         }
 
 
