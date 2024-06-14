@@ -3,7 +3,7 @@
 
 using namespace JNet;
 
-Server::Server() : udpSocket(context.getAsioContext(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), PORT)) {
+Server::Server(uint16_t port) : udpSocket(context.getAsioContext(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port)) {
 
 }
 

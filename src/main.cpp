@@ -51,8 +51,9 @@ int main(int argc, char** argv) {
             return -1;
         }
         std::string host(argv[1]);
+        std::string port = "16632";
         JNet::Client client;
-        client.connect(host);
+        client.connect(host, port);
         uint32_t messageCount = 0;
         std::string YES = "Hello world!";
         std::thread packetReceiver = std::thread(boost::bind(&clientPacketPrinter, &client));
