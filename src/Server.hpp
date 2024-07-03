@@ -10,6 +10,8 @@
 #include "UDP/PacketWrapperChecker.hpp"
 #include "TCP/Connection.hpp"
 #include "ClientServerBase/enums.hpp"
+#include "shorteners.hpp"
+#include "UDP/Serverqueue.hpp"
 
 namespace JNet {
 
@@ -17,12 +19,10 @@ namespace JNet {
 
     
     template<TemplatedServerArgs>
-    class Server : udp::PacketWrapperChecker<TPacketWrapper> {
+    class Server : private udp::PacketWrapperChecker<TPacketWrapper>, public udp::Serverqueue<TPacketWrapper> {
     public:
-        using ReuseableBuffer = udp::ReuseableBuffer<udp::bufferSize,true>;
-        using BufferManager = udp::BufferManager<udp::bufferSize, SafetyFlag::threadSafe, true>;
-        using ReuseablePacket = udp::ReuseablePacket<TPacketWrapper ,udp::bufferSize, true>;
-        using Connection = tcp::Connection;
+        using UDPTYPES;
+        using TCPTYPES;
         
     public:
         Server(uint16_t port);
@@ -30,13 +30,13 @@ namespace JNet {
         void close(std::chrono::microseconds finishTime = std::chrono::microseconds(100));
         /** gets and empty packet which can be send using this server
         */        
-        ReuseablePacket getEmptyPacket();
-        void sendPacket(ReuseablePacket packet);
+        //ReuseablePacket getEmptyPacket();
+        //void sendPacket(ReuseablePacket packet);
         //void setPacketCallback(void (*callback) ()); //uhhh yeah that's not how programming works
-        bool hasAvailablePacket();
-        ReuseablePacket receiveIncomingPacket();
-        void returnPacket(ReuseablePacket packet);
-        bool isRunning();
+        //bool hasAvailablePacket();
+        //ReuseablePacket receiveIncomingPacket();
+        //void returnPacket(ReuseablePacket packet);
+        //bool isRunning();
         //void setPacketCallback(std::function<void()> callback);
         ~Server();
     private:
@@ -44,26 +44,20 @@ namespace JNet {
         void acceptConnection();
         void handleConnectionAccept(Connection* connection, const boost::system::error_code& e);
 
-        void receivePackets();
-        void receivePacket();
+        //void receivePackets();
+        //void receivePacket();
 
-        void handlePacketReceive(ReuseableBuffer* recycleableBuffer ,const boost::system::error_code& e, size_t messageSize);
-        void handleSentPacket(ReuseableBuffer* recycleableBuffer, const boost::system::error_code& e, std::size_t messageSize);
-        void sendNextPacket(); 
+        //void handlePacketReceive(ReuseableBuffer* recycleableBuffer ,const boost::system::error_code& e, size_t messageSize);
+        //void handleSentPacket(ReuseableBuffer* recycleableBuffer, const boost::system::error_code& e, std::size_t messageSize);
+        //void sendNextPacket(); 
     private:
         //boost::asio::ip::tcp::acceptor acceptor;
         //std::function<void()> tcpCallback;
         
-        JNet::Context context;
-        bool shouldClose = false;
+        
 
         //std::function<void()> udpCallback;
-        BufferManager bufferManager;
-        udp::Socket udpSocket;
-        udp::Endpoint udpEndpoint;
-        JNet::ts::Queue<ReuseableBuffer*> incomingPackets;
-        JNet::ts::Queue<ReuseableBuffer*> outgoingPackets;
-        boost::asio::thread_pool udpSender{1};
+
 
 
     };
@@ -79,8 +73,8 @@ namespace JNet {
 
 
     template<TemplatedServerArgs>
-    TemplatedServer::Server(uint16_t port) : udpSocket(context.getAsioContext(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port))
-        //, acceptor(context.getAsioContext(), boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)) 
+    TemplatedServer::Server(uint16_t port) : udp::Serverqueue<TPacketWrapper>(port)
+        //, acceptor(context.getAsioContext(), boost::asio::ip::cleatcp::endpoint(boost::asio::ip::tcp::v4(), port)) 
         {
         //boost::asio::ip::tcp::endpoint endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port);
         //acceptor.open(endpoint.protocol());
@@ -91,8 +85,8 @@ namespace JNet {
 
     template<TemplatedServerArgs>
     void TemplatedServer::run() {
-        context.async_run();
-        receivePackets();
+        this->baseRun();
+        this->runUdpReceive();
         acceptConnections();
     }
 
@@ -100,12 +94,12 @@ namespace JNet {
     void TemplatedServer::acceptConnections() { 
         acceptConnection();
     }
-
+    /*
     template<TemplatedServerArgs>
     void TemplatedServer::receivePackets() { 
         //std::cout << "Starting receiving packets\n";
         receivePacket();
-    }
+    }*/
 
     template<TemplatedServerArgs>
     void TemplatedServer::acceptConnection() { 
@@ -117,7 +111,7 @@ namespace JNet {
     }
 
 
-
+    /*
     template<TemplatedServerArgs>
     void TemplatedServer::receivePacket() {
         ReuseableBuffer* buffer = bufferManager.getBuffer();
@@ -129,7 +123,8 @@ namespace JNet {
         callback
         );
     }
-
+*/
+/*
     template<TemplatedServerArgs>
     void TemplatedServer::handlePacketReceive(ReuseableBuffer* recycleableBuffer,const boost::system::error_code& e, size_t messageSize) {
         if (shouldClose) {
@@ -158,7 +153,8 @@ namespace JNet {
         incomingPackets.push(recycleableBuffer);
         
     }
-
+*/
+/*
     template<TemplatedServerArgs>
     void TemplatedServer::handleSentPacket(ReuseableBuffer *recycleableBuffer, const boost::system::error_code &e, std::size_t messageSize) {
         if (e.failed()) {
@@ -170,7 +166,8 @@ namespace JNet {
             std::cout << "Successfully responded!\n";
         bufferManager.recycleBuffer(recycleableBuffer);
     }
-
+*/
+/*
     template<TemplatedServerArgs>
     void TemplatedServer::sendNextPacket() {
         ReuseableBuffer* sendBuffer = outgoingPackets.consumeFront();
@@ -183,63 +180,62 @@ namespace JNet {
         );
         udpSocket.async_send_to(boost::asio::buffer(sendBuffer->buffer),sendBuffer->endpoint,callBack);
     }
-
+*/
     template<TemplatedServerArgs>
     void TemplatedServer::close(std::chrono::microseconds finishTime) {
-        shouldClose = true;
-        context.shutDown(finishTime);
-        outgoingPackets.clear();
-        incomingPackets.clear();
-        udpSender.join();
+        this->baseClose();
+        this->udpReceiverClose();
     }
-
+/*
     template<TemplatedServerArgs>
     typename TemplatedServer::ReuseablePacket TemplatedServer::getEmptyPacket() {
         return ReuseablePacket(bufferManager.getBuffer());
     }
-
+*/
+/*
     template<TemplatedServerArgs>
     void TemplatedServer::sendPacket(ReuseablePacket packet) {
         outgoingPackets.push(packet.buffer);
 
         boost::asio::post(udpSender, boost::bind(&Server::sendNextPacket,this));
-    }
+    }*/
 
     //template<TemplatedServerArgs>
     //void TemplatedServer::setPacketCallback(void (*callback)()) {
         //this->callback = callback;
     //}
-
+/*
     template<TemplatedServerArgs>
     bool TemplatedServer::hasAvailablePacket() {
         return !incomingPackets.empty();
-    }
-
+    }*/
+/*
     template<TemplatedServerArgs>
     typename TemplatedServer::ReuseablePacket JNet::TemplatedServer::receiveIncomingPacket() {
         return ReuseablePacket(incomingPackets.consumeFront());
-    }
-
+    }*/
+/*
     template<TemplatedServerArgs>
     void TemplatedServer::returnPacket(ReuseablePacket packet) {
         bufferManager.recycleBuffer(packet.buffer);
-    }
-
+    }*/
+/*
     template<TemplatedServerArgs>
     bool TemplatedServer::isRunning() {
         return !shouldClose;
-    }
+    }*/
 
     //template <TemplatedServerArgs>
     //inline void TemplatedServer::setPacketCallback(std::function<void()> callback) {
         //udpCallback = callback;
     //}
-
+    //should perhaps be moved
     template<TemplatedServerArgs>
     TemplatedServer::~Server() {
-        if (!shouldClose) {
+        if (!this->shouldClose) {
             std::cerr << "You should call close() before destroying a server object\n";
             close();
         }
     }
 }
+

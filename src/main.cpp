@@ -72,14 +72,12 @@ int main(int argc, char** argv) {
         client.disconnect();
         packetReceiver.join();
     }
-    std::cout << "Hello?\n";
     if (BUILDTYPE == BuildType::Server) {
         JNet::Server<JNet::udp::Packet<>, JNet::udp::receiveMode::queue, JNet::udp::Packet<>, JNet::tcp::receiveMode::queue> server(16632);
         std::cout << "Created server\n";
         bool running = true;
         server.run();
         std::thread packetReceiver = std::thread(boost::bind(&packetPrinter, &server));
-        std::cout << "Test\n";
         while (running) {
             std::string command;
             std::cin >> command;

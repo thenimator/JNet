@@ -17,8 +17,8 @@ namespace JNet {
         class ReuseablePacket {
             template<TemplatedClientArgs>
             friend class JNet::Client;
-            template<TemplatedServerArgs>
-            friend class JNet::Server;
+            template<TWrapper>
+            friend class JNet::udp::Serverqueue;
         public:
             ReuseablePacket() = delete;
             ReuseablePacket(const ReuseablePacket<TWrapper, reuseableBufferSize, includeEndpoint>& other) = delete;
