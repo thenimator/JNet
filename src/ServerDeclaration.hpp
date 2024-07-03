@@ -1,6 +1,14 @@
 #pragma once
+#include "ClientServerBase/enums.hpp"
+#include "UDP/ServerqueueDeclaration.hpp"
+
+#define TemplatedServer Server<TPacketWrapper, TUdpReceivemode, TMessageWrapper, TTcpReceivemode>
+#define TemplatedServerArgs class TPacketWrapper, udp::receiveMode TUdpReceivemode, class TMessageWrapper, tcp::receiveMode TTcpReceivemode
 
 namespace JNet {
-    template<class TPacketWrapper>
+    template<TemplatedServerArgs>
     class Server;
+
+
+
 }

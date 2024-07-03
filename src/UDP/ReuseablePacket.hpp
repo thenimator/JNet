@@ -15,10 +15,10 @@ namespace JNet {
         */
         template <class TWrapper, uint32_t reuseableBufferSize = bufferSize, bool includeEndpoint = false>
         class ReuseablePacket {
-            template<class TPacketWrapper>
+            template<TemplatedClientArgs>
             friend class JNet::Client;
-            template<class TPacketWrapper>
-            friend class JNet::Server;
+            template<TWrapper>
+            friend class JNet::udp::Serverqueue;
         public:
             ReuseablePacket() = delete;
             ReuseablePacket(const ReuseablePacket<TWrapper, reuseableBufferSize, includeEndpoint>& other) = delete;

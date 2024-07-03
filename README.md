@@ -5,6 +5,8 @@ JNet I guess
 2. open terminal
 3. install boost (linux)
 `sudo apt-get install libboost-all-dev`
+3. install boost (windows)
+`https://www.boost.org/doc/libs/1_85_0/more/getting_started/windows.html#get-boost`
 
 4. execute 
 `setup.sh`
@@ -13,11 +15,3 @@ JNet I guess
 `building/client.sh`
 `building/server.sh`
 to execute and build
-
-OR
-
-4. execute command 
-`cmake -B build`
-5. forward ports if you want to build the server
-6. execute command to build executeable
-`cmake --build build`

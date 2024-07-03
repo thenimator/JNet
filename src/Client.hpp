@@ -14,7 +14,7 @@
 namespace JNet {
     //TODO: Client and Server inherit from shared base class
     //TODO: Context always has to call terminate
-    template<class TPacketWrapper>
+    template<TemplatedClientArgs>
     class Client : udp::PacketWrapperChecker<TPacketWrapper> {
     public:
         using ReuseableBuffer = udp::ReuseableBuffer<udp::bufferSize,false>;
@@ -25,7 +25,7 @@ namespace JNet {
         //requires its own context
         Client();
         Client(const Client&) = delete;
-        Client<TPacketWrapper>& operator=(Client<TPacketWrapper>&) = delete;
+        TemplatedClient& operator=(TemplatedClient&) = delete;
         ~Client();
         ReuseablePacket getPacket();
         void sendPacket(ReuseablePacket packet);
@@ -68,25 +68,25 @@ namespace JNet {
     };
 
 
-    template<class TPacketWrapper>
-    typename Client<TPacketWrapper>::ReuseablePacket Client<TPacketWrapper>::getPacket() {
+    template<TemplatedClientArgs>
+    typename TemplatedClient::ReuseablePacket TemplatedClient::getPacket() {
         return ReuseablePacket(bufferManager.getBuffer());
     }
 
-    template<class TPacketWrapper>
-    Client<TPacketWrapper>::Client() : udpSocket(context.getAsioContext()), udpResolver(context.getAsioContext()) {
+    template<TemplatedClientArgs>
+    TemplatedClient::Client() : udpSocket(context.getAsioContext()), udpResolver(context.getAsioContext()) {
 
     }
 
-    template<class TPacketWrapper>
-    Client<TPacketWrapper>::~Client() {
+    template<TemplatedClientArgs>
+    TemplatedClient::~Client() {
         if (!shouldDisconnect)  {
             std::cerr << "You should call disnonnect() before destroying a client object\n";
         }
     }
 
-    template<class TPacketWrapper>
-    void Client<TPacketWrapper>::sendPacket(Client<TPacketWrapper>::ReuseablePacket packet) {
+    template<TemplatedClientArgs>
+    void TemplatedClient::sendPacket(TemplatedClient::ReuseablePacket packet) {
         if (host == "") {
             if (debugFlagActive<DebugFlag::clientDebug>()) 
                 std::cout << "No host given but packet send attempted\n";
@@ -99,8 +99,8 @@ namespace JNet {
         boost::asio::post(udpSender, boost::bind(&Client::sendNextPacketToHost,this));
     }
 
-    template<class TPacketWrapper>
-    void Client<TPacketWrapper>::connect(const std::string &host, const std::string& port) {
+    template<TemplatedClientArgs>
+    void TemplatedClient::connect(const std::string &host, const std::string& port) {
         shouldDisconnect = false;
         context.async_run();
         this->host = host;
@@ -117,8 +117,8 @@ namespace JNet {
         receive();
     }
 
-    template<class TPacketWrapper>
-    void Client<TPacketWrapper>::disconnect(std::chrono::microseconds finishDuration) {
+    template<TemplatedClientArgs>
+    void TemplatedClient::disconnect(std::chrono::microseconds finishDuration) {
         shouldDisconnect = true;
         context.shutDown(finishDuration);
         incomingPackets.clear();
@@ -126,28 +126,28 @@ namespace JNet {
         udpSender.join();
     }
 
-    template<class TPacketWrapper>
-    bool Client<TPacketWrapper>::hasAvailablePacket() {
+    template<TemplatedClientArgs>
+    bool TemplatedClient::hasAvailablePacket() {
         return !incomingPackets.empty();
     }
 
-    template<class TPacketWrapper>
-    typename Client<TPacketWrapper>::ReuseablePacket Client<TPacketWrapper>::receiveIncomingPacket() {
+    template<TemplatedClientArgs>
+    typename TemplatedClient::ReuseablePacket TemplatedClient::receiveIncomingPacket() {
         return ReuseablePacket(incomingPackets.consumeFront());
     }
 
-    template<class TPacketWrapper>
-    void Client<TPacketWrapper>::returnPacket(ReuseablePacket packet) {
+    template<TemplatedClientArgs>
+    void TemplatedClient::returnPacket(ReuseablePacket packet) {
         bufferManager.recycleBuffer(packet.buffer);
     }
 
-    template<class TPacketWrapper>
-    bool Client<TPacketWrapper>::hasConnection() {
+    template<TemplatedClientArgs>
+    bool TemplatedClient::hasConnection() {
         return !shouldDisconnect;
     }
 
-    template<class TPacketWrapper>
-    void Client<TPacketWrapper>::receive() {
+    template<TemplatedClientArgs>
+    void TemplatedClient::receive() {
         ReuseableBuffer* buffer = bufferManager.getBuffer();
         if (debugFlagActive<DebugFlag::clientDebug>()) {
             std::stringstream ss;
@@ -162,8 +162,8 @@ namespace JNet {
         );
     }
 
-    template<class TPacketWrapper>
-    void Client<TPacketWrapper>::handlePacketReceive(ReuseableBuffer *recycleableBuffer, const boost::system::error_code &e, size_t messageSize) {
+    template<TemplatedClientArgs>
+    void TemplatedClient::handlePacketReceive(ReuseableBuffer *recycleableBuffer, const boost::system::error_code &e, size_t messageSize) {
         if (debugFlagActive<DebugFlag::clientDebug>()) {
             std::stringstream ss;
             ss << "Started handling receive for " << messageSize << " bytes\n";
@@ -185,8 +185,8 @@ namespace JNet {
         incomingPackets.push(recycleableBuffer);
     }
 
-    template<class TPacketWrapper>
-    void Client<TPacketWrapper>::resolveHost() {
+    template<TemplatedClientArgs>
+    void TemplatedClient::resolveHost() {
         try {
             udpEndpoint = *udpResolver.resolve(host,port).begin();
         } catch (boost::system::system_error& e) {
@@ -196,16 +196,16 @@ namespace JNet {
         }
     }
 
-    template<class TPacketWrapper>
-    void Client<TPacketWrapper>::handleSentPacket(ReuseableBuffer *recycleableBuffer, const boost::system::error_code &e, std::size_t messageSize) {
+    template<TemplatedClientArgs>
+    void TemplatedClient::handleSentPacket(ReuseableBuffer *recycleableBuffer, const boost::system::error_code &e, std::size_t messageSize) {
         bufferManager.recycleBuffer(recycleableBuffer);
         if (e.failed()) {
             std::cerr << "Sending failed. Code: " << e.value() << "\n";
         }
     }
 
-    template<class TPacketWrapper>
-    void Client<TPacketWrapper>::sendNextPacketToHost() {
+    template<TemplatedClientArgs>
+    void TemplatedClient::sendNextPacketToHost() {
         ReuseableBuffer* sendBuffer = outgoingPackets.consumeFront();
         auto callBack = boost::bind(
             &Client::handleSentPacket

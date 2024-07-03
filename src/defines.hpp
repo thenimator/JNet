@@ -25,7 +25,7 @@ namespace JNet {
         packetDebug = 0x40
     };
 
-    constexpr DebugFlags debugFlags = clientDebug | serverDebug;
+    constexpr DebugFlags debugFlags = clientDebug | serverDebug | bufferManagerDebug;
 
     template<DebugFlag flag>
     constexpr bool debugFlagActive() {
