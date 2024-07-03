@@ -7,11 +7,11 @@
 namespace JNet {
     namespace udp {
         template<class TPacketWrapper>
-        class Serverqueue : public virtual ServerBase {
+        class ServerIncomingQueue : public virtual ServerBase {
         public:
             using UDPTYPES;
         public:
-            Serverqueue(uint16_t port);
+            ServerIncomingQueue(uint16_t port);
             /** gets and empty packet which can be send using this server
             */        
             ReuseablePacket getEmptyPacket();
@@ -44,58 +44,58 @@ namespace JNet {
         };
 
         template <class TPacketWrapper>
-        inline Serverqueue<TPacketWrapper>::Serverqueue(uint16_t port) : udpSocket(context.getAsioContext(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port)) {
+        inline ServerIncomingQueue<TPacketWrapper>::ServerIncomingQueue(uint16_t port) : udpSocket(context.getAsioContext(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port)) {
 
         }
 
         template <class TPacketWrapper>
-        inline typename Serverqueue<TPacketWrapper>::ReuseablePacket Serverqueue<TPacketWrapper>::getEmptyPacket() {
+        inline typename ServerIncomingQueue<TPacketWrapper>::ReuseablePacket ServerIncomingQueue<TPacketWrapper>::getEmptyPacket() {
             return ReuseablePacket(bufferManager.getBuffer());
         }
 
         template <class TPacketWrapper>
-        inline void Serverqueue<TPacketWrapper>::sendPacket(ReuseablePacket packet) {
+        inline void ServerIncomingQueue<TPacketWrapper>::sendPacket(ReuseablePacket packet) {
             outgoingPackets.push(packet.buffer);
 
-            boost::asio::post(udpSender, boost::bind(&Serverqueue<TPacketWrapper>::sendNextPacket,this));
+            boost::asio::post(udpSender, boost::bind(&ServerIncomingQueue<TPacketWrapper>::sendNextPacket,this));
         }
 
         template <class TPacketWrapper>
-        inline bool Serverqueue<TPacketWrapper>::hasAvailablePacket() {
+        inline bool ServerIncomingQueue<TPacketWrapper>::hasAvailablePacket() {
             return !incomingPackets.empty();
         }
 
         template <class TPacketWrapper>
-        inline typename Serverqueue<TPacketWrapper>::ReuseablePacket Serverqueue<TPacketWrapper>::receiveIncomingPacket() {
+        inline typename ServerIncomingQueue<TPacketWrapper>::ReuseablePacket ServerIncomingQueue<TPacketWrapper>::receiveIncomingPacket() {
             return ReuseablePacket(incomingPackets.consumeFront());
         }
 
         template <class TPacketWrapper>
-        inline void Serverqueue<TPacketWrapper>::returnPacket(ReuseablePacket packet) {
+        inline void ServerIncomingQueue<TPacketWrapper>::returnPacket(ReuseablePacket packet) {
             bufferManager.recycleBuffer(packet.buffer);
         }
 
         template <class TPacketWrapper>
-        inline void Serverqueue<TPacketWrapper>::udpReceiverClose() {
+        inline void ServerIncomingQueue<TPacketWrapper>::udpReceiverClose() {
             outgoingPackets.clear();
             incomingPackets.clear();
             udpSender.join();
         }
 
         template <class TPacketWrapper>
-        inline void Serverqueue<TPacketWrapper>::runUdpReceive() {
+        inline void ServerIncomingQueue<TPacketWrapper>::runUdpReceive() {
             receivePackets();
         }
 
         template <class TPacketWrapper>
-        inline void Serverqueue<TPacketWrapper>::receivePackets() {
+        inline void ServerIncomingQueue<TPacketWrapper>::receivePackets() {
             receivePacket();
         }
 
         template <class TPacketWrapper>
-        inline void Serverqueue<TPacketWrapper>::receivePacket() {
+        inline void ServerIncomingQueue<TPacketWrapper>::receivePacket() {
             ReuseableBuffer* buffer = bufferManager.getBuffer();
-            auto callback = boost::bind(&Serverqueue<TPacketWrapper>::handlePacketReceive, this, buffer,boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred);
+            auto callback = boost::bind(&ServerIncomingQueue<TPacketWrapper>::handlePacketReceive, this, buffer,boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred);
             
             udpSocket.async_receive_from(
                 boost::asio::buffer(buffer->buffer), 
@@ -106,7 +106,7 @@ namespace JNet {
         }
 
         template <class TPacketWrapper>
-        inline void Serverqueue<TPacketWrapper>::handlePacketReceive(ReuseableBuffer *recycleableBuffer, const boost::system::error_code &e, size_t messageSize) {
+        inline void ServerIncomingQueue<TPacketWrapper>::handlePacketReceive(ReuseableBuffer *recycleableBuffer, const boost::system::error_code &e, size_t messageSize) {
             std::cout << "handlePacketReceive called\n";
 
             if (shouldClose) {
@@ -132,7 +132,7 @@ namespace JNet {
         }
 
         template <class TPacketWrapper>
-        inline void Serverqueue<TPacketWrapper>::handleSentPacket(ReuseableBuffer *recycleableBuffer, const boost::system::error_code &e, std::size_t messageSize) {
+        inline void ServerIncomingQueue<TPacketWrapper>::handleSentPacket(ReuseableBuffer *recycleableBuffer, const boost::system::error_code &e, std::size_t messageSize) {
             if (e.failed()) {
                 std::stringstream ss;
                 ss << "Error when responding:\n" << e.message() << "\n";
@@ -144,10 +144,10 @@ namespace JNet {
         }
 
         template <class TPacketWrapper>
-        inline void Serverqueue<TPacketWrapper>::sendNextPacket() {
+        inline void ServerIncomingQueue<TPacketWrapper>::sendNextPacket() {
             ReuseableBuffer* sendBuffer = outgoingPackets.consumeFront();
             auto callBack = boost::bind(
-                &Serverqueue<TPacketWrapper>::handleSentPacket
+                &ServerIncomingQueue<TPacketWrapper>::handleSentPacket
                 ,this
                 ,sendBuffer
                 ,boost::asio::placeholders::error()
