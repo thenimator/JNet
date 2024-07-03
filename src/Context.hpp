@@ -108,6 +108,7 @@ namespace JNet {
     }
 
     const boost::asio::io_context& Context::getAsioContext() const {
+        std::cout << "Returning asio context\n";
         return asio_context;
     }
 

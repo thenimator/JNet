@@ -15,7 +15,7 @@
 #endif
 
 
-void packetPrinter(JNet::Server<JNet::udp::Packet<>>* server) {
+void packetPrinter(JNet::Server<JNet::udp::Packet<>, JNet::udp::receiveMode::queue, JNet::udp::Packet<>, JNet::tcp::receiveMode::queue>* server) {
     std::cout << "Packetprinter called\n";
     while(server->isRunning()) {
         if (server->hasAvailablePacket()) {
@@ -31,7 +31,7 @@ void packetPrinter(JNet::Server<JNet::udp::Packet<>>* server) {
     std::cout << "Exiting packetprinter\n";
 }
 
-void clientPacketPrinter(JNet::Client<JNet::udp::Packet<>>* client) {
+void clientPacketPrinter(JNet::Client<JNet::udp::Packet<>, JNet::udp::receiveMode::queue, JNet::udp::Packet<>, JNet::tcp::receiveMode::queue>* client) {
     std::cout << "Packetprinter called\n";
     while(client->hasConnection()) {
         if (client->hasAvailablePacket()) {
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
         }
         std::string host(argv[1]);
         std::string port = "16632";
-        JNet::Client<JNet::udp::Packet<>> client;
+        JNet::Client<JNet::udp::Packet<>, JNet::udp::receiveMode::queue, JNet::udp::Packet<>, JNet::tcp::receiveMode::queue> client;
         client.connect(host, port);
         uint32_t messageCount = 0;
         std::string YES = "Hello world!";
@@ -72,8 +72,9 @@ int main(int argc, char** argv) {
         client.disconnect();
         packetReceiver.join();
     }
+    std::cout << "Hello?\n";
     if (BUILDTYPE == BuildType::Server) {
-        JNet::Server<JNet::udp::Packet<>> server(16632);
+        JNet::Server<JNet::udp::Packet<>, JNet::udp::receiveMode::queue, JNet::udp::Packet<>, JNet::tcp::receiveMode::queue> server(16632);
         std::cout << "Created server\n";
         bool running = true;
         server.run();

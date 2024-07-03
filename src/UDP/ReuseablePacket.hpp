@@ -15,9 +15,9 @@ namespace JNet {
         */
         template <class TWrapper, uint32_t reuseableBufferSize = bufferSize, bool includeEndpoint = false>
         class ReuseablePacket {
-            template<class TPacketWrapper>
+            template<TemplatedClientArgs>
             friend class JNet::Client;
-            template<class TPacketWrapper>
+            template<TemplatedServerArgs>
             friend class JNet::Server;
         public:
             ReuseablePacket() = delete;
