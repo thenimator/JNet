@@ -19,6 +19,8 @@ namespace JNet {
             friend class JNet::Client;
             template<TWrapper>
             friend class JNet::udp::ServerIncomingQueue;
+            template<TWrapper>
+            friend class JNet::udp::ServerOutgoingQueue;
         public:
             ReuseablePacket() = delete;
             ReuseablePacket(const ReuseablePacket<TWrapper, reuseableBufferSize, includeEndpoint>& other) = delete;
