@@ -11,8 +11,9 @@
 #include "TCP/Connection.hpp"
 #include "ClientServerBase/enums.hpp"
 #include "shorteners.hpp"
-#include "UDP/ServerIncomingQueue.hpp"
+#include "UDP/IncomingMethod.hpp"
 #include "UDP/ServerOutgoingQueue.hpp"
+
 
 namespace JNet {
 
@@ -20,7 +21,7 @@ namespace JNet {
 
     
     template<TemplatedServerArgs>
-    class Server : private udp::PacketWrapperChecker<TPacketWrapper>, virtual public udp::ServerIncomingQueue<TPacketWrapper>, virtual public udp::ServerOutgoingQueue<TPacketWrapper> {
+    class Server : private udp::PacketWrapperChecker<TPacketWrapper>, virtual public udp::IncomingMethod<TPacketWrapper, TUdpReceivemode>, virtual public udp::ServerOutgoingQueue<TPacketWrapper> {
     public:
         using UDPTYPES;
         using TCPTYPES;
@@ -53,7 +54,7 @@ namespace JNet {
 
 
     template<TemplatedServerArgs>
-    TemplatedServer::Server(uint16_t port) : ServerBase<TPacketWrapper>(port), udp::ServerIncomingQueue<TPacketWrapper>(), udp::ServerOutgoingQueue<TPacketWrapper>()
+    TemplatedServer::Server(uint16_t port) : ServerBase<TPacketWrapper>(port), udp::IncomingMethod<TPacketWrapper, TUdpReceivemode>(), udp::ServerOutgoingQueue<TPacketWrapper>()
         //, acceptor(context.getAsioContext(), boost::asio::ip::cleatcp::endpoint(boost::asio::ip::tcp::v4(), port)) 
         {
         //boost::asio::ip::tcp::endpoint endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port);
