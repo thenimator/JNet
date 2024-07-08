@@ -12,6 +12,7 @@
 #include "ClientServerBase/enums.hpp"
 #include "shorteners.hpp"
 #include "UDP/ServerIncomingQueue.hpp"
+#include "UDP/ServerOutgoingQueue.hpp"
 
 namespace JNet {
 
@@ -19,7 +20,7 @@ namespace JNet {
 
     
     template<TemplatedServerArgs>
-    class Server : private udp::PacketWrapperChecker<TPacketWrapper>, public udp::ServerIncomingQueue<TPacketWrapper> {
+    class Server : private udp::PacketWrapperChecker<TPacketWrapper>, virtual public udp::ServerIncomingQueue<TPacketWrapper>, virtual public udp::ServerOutgoingQueue<TPacketWrapper> {
     public:
         using UDPTYPES;
         using TCPTYPES;
@@ -52,7 +53,7 @@ namespace JNet {
 
 
     template<TemplatedServerArgs>
-    TemplatedServer::Server(uint16_t port) : udp::ServerIncomingQueue<TPacketWrapper>(port)
+    TemplatedServer::Server(uint16_t port) : ServerBase<TPacketWrapper>(port), udp::ServerIncomingQueue<TPacketWrapper>(), udp::ServerOutgoingQueue<TPacketWrapper>()
         //, acceptor(context.getAsioContext(), boost::asio::ip::cleatcp::endpoint(boost::asio::ip::tcp::v4(), port)) 
         {
         //boost::asio::ip::tcp::endpoint endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port);
@@ -88,6 +89,7 @@ namespace JNet {
     void TemplatedServer::close(std::chrono::microseconds finishTime) {
         this->baseClose();
         this->udpReceiverClose();
+        this->udpSenderClose();
     }
 
     //should perhaps be moved
