@@ -62,7 +62,6 @@ namespace JNet {
     private:
         void resolveHost();
         void handleSentPacket(ReuseableBuffer* recycleableBuffer, const boost::system::error_code& e, std::size_t messageSize);
-        void sendNextPacketToHost(); 
 
         
     };
@@ -94,9 +93,22 @@ namespace JNet {
 
             return;
         }
-        outgoingPackets.push(packet.buffer);
+        ReuseableBuffer* sendBuffer = packet.buffer;
+        auto callBack = boost::bind(
+            &Client::handleSentPacket
+            ,this
+            ,sendBuffer
+            ,boost::asio::placeholders::error()
+            ,boost::asio::placeholders::bytes_transferred()
+        );
+        udpSocket.async_send(boost::asio::buffer(sendBuffer->buffer),callBack);
+        if (debugFlagActive<DebugFlag::clientDebug>()) {
+            std::stringstream ss;
 
-        boost::asio::post(udpSender, boost::bind(&Client::sendNextPacketToHost,this));
+            ss << "Sent to: " << udpSocket.remote_endpoint() << "\n";
+        
+            std::cout << ss.str();
+        }
     }
 
     template<TemplatedClientArgs>
@@ -202,27 +214,6 @@ namespace JNet {
         if (e.failed()) {
             std::cerr << "Sending failed. Code: " << e.value() << "\n";
         }
-    }
-
-    template<TemplatedClientArgs>
-    void TemplatedClient::sendNextPacketToHost() {
-        ReuseableBuffer* sendBuffer = outgoingPackets.consumeFront();
-        auto callBack = boost::bind(
-            &Client::handleSentPacket
-            ,this
-            ,sendBuffer
-            ,boost::asio::placeholders::error()
-            ,boost::asio::placeholders::bytes_transferred()
-        );
-        udpSocket.async_send(boost::asio::buffer(sendBuffer->buffer),callBack);
-        if (debugFlagActive<DebugFlag::clientDebug>()) {
-            std::stringstream ss;
-
-            ss << "Sent to: " << udpSocket.remote_endpoint() << "\n";
-        
-            std::cout << ss.str();
-        }
-        bufferManager.recycleBuffer(sendBuffer);
     }
 
     
