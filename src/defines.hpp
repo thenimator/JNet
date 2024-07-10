@@ -9,6 +9,7 @@
 #include <iostream>
 #include <stdint.h>
 #include <concepts>
+#include <functional>
 
 namespace JNet {
 

@@ -12,6 +12,9 @@ namespace JNet {
         ServerBase(uint16_t port);
         ServerBase(char err);
         bool isRunning();
+        /** gets and empty packet which can be send using this server
+            */        
+        ReuseablePacket getEmptyPacket();
     protected: 
         void baseRun(); 
         void baseClose(std::chrono::microseconds finishTime = std::chrono::microseconds(100));
@@ -25,8 +28,14 @@ namespace JNet {
         
     };
 
-    template<class TPacketWrapper>
-    inline void ServerBase<TPacketWrapper>::baseRun() {
+    template <class TPacketWrapper>
+    inline typename ServerBase<TPacketWrapper>::ReuseablePacket ServerBase<TPacketWrapper>::getEmptyPacket() {
+        return ReuseablePacket(this->bufferManager.getBuffer());
+    }
+
+    template <class TPacketWrapper>
+    inline void ServerBase<TPacketWrapper>::baseRun()
+    {
         context.async_run();
     }
 

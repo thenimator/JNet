@@ -1,23 +1,15 @@
 #pragma once
-#include "shorteners.hpp"
-#include "../TS/queue.hpp"
 #include "../serverbase.hpp"
 
 namespace JNet {
     namespace udp {
         template<class TPacketWrapper>
-        class ServerIncomingQueue : virtual public ServerBase<TPacketWrapper> {
+        class ServerIncomingCallback : public virtual ServerBase<TPacketWrapper> {
         public:
             using UDPTYPES;
         public:
-            ServerIncomingQueue();
-            
-            
-            bool hasAvailablePacket();
-            ReuseablePacket receiveIncomingPacket();
-            void returnPacket(ReuseablePacket packet);
-            
-
+            ServerIncomingCallback();
+            void setCallback(std::function<void(ReuseablePacket)> callback);
         protected:
             void udpReceiverClose();
             void runUdpReceive();
@@ -26,54 +18,45 @@ namespace JNet {
             void receivePacket();
 
             void handlePacketReceive(ReuseableBuffer* recycleableBuffer ,const boost::system::error_code& e, size_t messageSize);
-            
-
-
-
         private:
-            JNet::ts::Queue<ReuseableBuffer*> incomingPackets;
+            std::function<void(ReuseablePacket)> callback = nullptr;
         };
 
         template <class TPacketWrapper>
-        inline ServerIncomingQueue<TPacketWrapper>::ServerIncomingQueue() : ServerBase<TPacketWrapper>('\0') {
+        inline ServerIncomingCallback<TPacketWrapper>::ServerIncomingCallback() : ServerBase<TPacketWrapper>('\0') {
 
         }
 
         template <class TPacketWrapper>
-        inline bool ServerIncomingQueue<TPacketWrapper>::hasAvailablePacket() {
-            return !incomingPackets.empty();
+        inline void ServerIncomingCallback<TPacketWrapper>::setCallback(std::function<void(ReuseablePacket)> callback) {
+            if (this->callback != nullptr) {
+                throw std::runtime_error("Callback can't be changed after initializing it");
+            }
+            if (callback == nullptr) {
+                throw std::runtime_error("Given callback is nullptr");
+            }
+            this->callback = callback;
         }
 
         template <class TPacketWrapper>
-        inline typename ServerIncomingQueue<TPacketWrapper>::ReuseablePacket ServerIncomingQueue<TPacketWrapper>::receiveIncomingPacket() {
-            return ReuseablePacket(incomingPackets.consumeFront());
+        inline void ServerIncomingCallback<TPacketWrapper>::udpReceiverClose() {
         }
 
         template <class TPacketWrapper>
-        inline void ServerIncomingQueue<TPacketWrapper>::returnPacket(ReuseablePacket packet) {
-            this->bufferManager.recycleBuffer(packet.buffer);
-        }
-
-        template <class TPacketWrapper>
-        inline void ServerIncomingQueue<TPacketWrapper>::udpReceiverClose() {
-            incomingPackets.clear();
-        
-        }
-
-        template <class TPacketWrapper>
-        inline void ServerIncomingQueue<TPacketWrapper>::runUdpReceive() {
+        inline void ServerIncomingCallback<TPacketWrapper>::runUdpReceive() {
+            if (callback == nullptr)
+                throw std::runtime_error("You need to set a callback before running the server!");
             receivePackets();
         }
 
         template <class TPacketWrapper>
-        inline void ServerIncomingQueue<TPacketWrapper>::receivePackets() {
+        inline void ServerIncomingCallback<TPacketWrapper>::receivePackets() {
             receivePacket();
         }
-
         template <class TPacketWrapper>
-        inline void ServerIncomingQueue<TPacketWrapper>::receivePacket() {
+        inline void ServerIncomingCallback<TPacketWrapper>::receivePacket() {
             ReuseableBuffer* buffer = this->bufferManager.getBuffer();
-            auto callback = boost::bind(&ServerIncomingQueue<TPacketWrapper>::handlePacketReceive, this, buffer,boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred);
+            auto callback = boost::bind(&ServerIncomingCallback<TPacketWrapper>::handlePacketReceive, this, buffer,boost::asio::placeholders::error,boost::asio::placeholders::bytes_transferred);
             
             this->udpSocket.async_receive_from(
                 boost::asio::buffer(buffer->buffer), 
@@ -84,7 +67,7 @@ namespace JNet {
         }
 
         template <class TPacketWrapper>
-        inline void ServerIncomingQueue<TPacketWrapper>::handlePacketReceive(ReuseableBuffer *recycleableBuffer, const boost::system::error_code &e, size_t messageSize) {
+        inline void ServerIncomingCallback<TPacketWrapper>::handlePacketReceive(ReuseableBuffer* recycleableBuffer, const boost::system::error_code& e, size_t messageSize) {
 
             if (this->shouldClose) {
                 if (debugFlagActive<DebugFlag::serverDebug>()) 
@@ -104,8 +87,7 @@ namespace JNet {
             
             if (debugFlagActive<DebugFlag::serverDebug>()) 
                 std::cout << "Handling received packet" << "\n";
-
-            this->incomingPackets.push(recycleableBuffer);
+            this->callback(ReuseablePacket(recycleableBuffer));
         }
     }
 }
