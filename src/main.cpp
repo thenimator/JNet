@@ -14,6 +14,10 @@
 #define BUILDTYPE BuildType::Client
 #endif
 
+#ifndef SERVERINCOMINGUSECALLBACK
+#define SERVERINCOMINGUSECALLBACK true
+#endif
+
 void serverQueuePacketPrinter(JNet::Server<JNet::udp::Packet<>, JNet::udp::receiveMode::queue, JNet::udp::Packet<>, JNet::tcp::receiveMode::queue>* server) {
     std::cout << "Packetprinter called\n";
     while(server->isRunning()) {
@@ -105,7 +109,8 @@ public:
 };
 
 void serverCallbackTest() {
-    JNet::Server<JNet::udp::Packet<>, JNet::udp::receiveMode::callback, JNet::udp::Packet<>, JNet::tcp::receiveMode::queue> server(16632);
+    using Server = JNet::Server<JNet::udp::Packet<>, JNet::udp::receiveMode::callback, JNet::udp::Packet<>, JNet::tcp::receiveMode::queue>;
+    Server server(16632);
     std::cout << "Created server\n";
     ServerCallback callbackObj;
     callbackObj.server = &server;
@@ -130,7 +135,12 @@ int main(int argc, char** argv) {
         return clientQueueTest(argc, argv);
     }
     if (BUILDTYPE == BuildType::Server) {
-        serverCallbackTest();
+        if (SERVERINCOMINGUSECALLBACK) {
+            serverCallbackTest();
+        } else {
+            serverQueueTest();
+        }
+        
     }
     return 0;
 }
