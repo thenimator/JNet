@@ -20,7 +20,7 @@ namespace JNet {
             template<TWrapper>
             friend class JNet::udp::ServerIncomingQueue;
             template<TWrapper>
-            friend class JNet::udp::ServerOutgoingQueue;
+            friend class JNet::udp::Sender;
             template<TWrapper>
             friend class JNet::udp::ServerIncomingCallback;
         public:

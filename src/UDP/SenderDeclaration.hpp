@@ -3,6 +3,6 @@
 namespace JNet {
     namespace udp {
         template<class TPacketWrapper>
-        class ServerOutgoingQueue;
+        class Sender;
     }
 }

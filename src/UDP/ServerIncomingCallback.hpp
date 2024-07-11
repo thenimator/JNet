@@ -6,7 +6,10 @@ namespace JNet {
         template<class TPacketWrapper>
         class ServerIncomingCallback : public virtual ServerBase<TPacketWrapper> {
         public:
-            using UDPTYPES;
+            using ReuseableBuffer = udp::ReuseableBuffer<JNet::udp::bufferSize,true>; 
+            using BufferManager = udp::BufferManager<JNet::udp::bufferSize, SafetyFlag::threadSafe, true>; 
+            using ReuseablePacket = JNet::udp::ReuseablePacket<TPacketWrapper ,JNet::udp::bufferSize, true>;
+;
         public:
             ServerIncomingCallback();
             void setCallback(std::function<void(ReuseablePacket)> callback);

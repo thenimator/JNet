@@ -1,20 +1,19 @@
 #pragma once
 #include "Context.hpp"
 #include "UDP/Buffer/BufferManager.hpp"
-#include "shorteners.hpp"
+#include "UDP/ReuseablePacket.hpp"
+
 
 namespace JNet {
     template<class TPacketWrapper>
     class ServerBase {
     public:
-        using UDPTYPES;
+        using ReuseableBuffer = JNet::udp::ReuseableBuffer<JNet::udp::bufferSize,true>;
+        using BufferManager = JNet::udp::BufferManager<JNet::udp::bufferSize, SafetyFlag::threadSafe, true>;
     public:
         ServerBase(uint16_t port);
         ServerBase(char err);
         bool isRunning();
-        /** gets and empty packet which can be send using this server
-            */        
-        ReuseablePacket getEmptyPacket();
     protected: 
         void baseRun(); 
         void baseClose(std::chrono::microseconds finishTime = std::chrono::microseconds(100));
@@ -27,11 +26,6 @@ namespace JNet {
         udp::Endpoint udpEndpoint;
         
     };
-
-    template <class TPacketWrapper>
-    inline typename ServerBase<TPacketWrapper>::ReuseablePacket ServerBase<TPacketWrapper>::getEmptyPacket() {
-        return ReuseablePacket(this->bufferManager.getBuffer());
-    }
 
     template <class TPacketWrapper>
     inline void ServerBase<TPacketWrapper>::baseRun()

@@ -61,9 +61,7 @@ namespace JNet {
 
     private:
         void resolveHost();
-        void handleSentPacket(ReuseableBuffer* recycleableBuffer, const boost::system::error_code& e, std::size_t messageSize);
-
-        
+        void handleSentPacket(ReuseableBuffer* recycleableBuffer, const boost::system::error_code& e, std::size_t messageSize);  
     };
 
 
