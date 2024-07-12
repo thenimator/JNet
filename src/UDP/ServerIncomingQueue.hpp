@@ -1,12 +1,12 @@
 #pragma once
 #include "shorteners.hpp"
 #include "../TS/queue.hpp"
-#include "../serverbase.hpp"
+#include "../ClientServerBase/IO_Base.hpp"
 
 namespace JNet {
     namespace udp {
         template<class TPacketWrapper>
-        class ServerIncomingQueue : virtual public ServerBase<TPacketWrapper> {
+        class ServerIncomingQueue : virtual public IO_BASE<true> {
         public:
             using UDPTYPES;
         public:
@@ -35,7 +35,7 @@ namespace JNet {
         };
 
         template <class TPacketWrapper>
-        inline ServerIncomingQueue<TPacketWrapper>::ServerIncomingQueue() : ServerBase<TPacketWrapper>('\0') {
+        inline ServerIncomingQueue<TPacketWrapper>::ServerIncomingQueue() : IO_BASE<true>('\0') {
 
         }
 

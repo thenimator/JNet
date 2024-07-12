@@ -1,10 +1,10 @@
 #pragma once
-#include "../serverbase.hpp"
+#include "../ClientServerBase/IO_Base.hpp"
 
 namespace JNet {
     namespace udp {
         template<class TPacketWrapper>
-        class ServerIncomingCallback : public virtual ServerBase<TPacketWrapper> {
+        class ServerIncomingCallback : public virtual IO_BASE<true> {
         public:
             using ReuseableBuffer = udp::ReuseableBuffer<JNet::udp::bufferSize,true>; 
             using BufferManager = udp::BufferManager<JNet::udp::bufferSize, SafetyFlag::threadSafe, true>; 
@@ -26,7 +26,7 @@ namespace JNet {
         };
 
         template <class TPacketWrapper>
-        inline ServerIncomingCallback<TPacketWrapper>::ServerIncomingCallback() : ServerBase<TPacketWrapper>('\0') {
+        inline ServerIncomingCallback<TPacketWrapper>::ServerIncomingCallback() : IO_BASE<true>('\0') {
 
         }
 

@@ -14,7 +14,6 @@
 #include "UDP/IncomingMethod.hpp"
 #include "UDP/Sender.hpp"
 
-
 namespace JNet {
 
     
@@ -54,7 +53,7 @@ namespace JNet {
 
 
     template<TemplatedServerArgs>
-    TemplatedServer::Server(uint16_t port) : ServerBase<TPacketWrapper>(port), udp::IncomingMethod<TPacketWrapper, TUdpReceivemode>(), udp::Sender<TPacketWrapper>()
+    TemplatedServer::Server(uint16_t port) : IO_BASE<true>(port), udp::IncomingMethod<TPacketWrapper, TUdpReceivemode>(), udp::Sender<TPacketWrapper>()
         //, acceptor(context.getAsioContext(), boost::asio::ip::cleatcp::endpoint(boost::asio::ip::tcp::v4(), port)) 
         {
         //boost::asio::ip::tcp::endpoint endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port);

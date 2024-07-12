@@ -2,7 +2,7 @@
 
 namespace JNet {
     namespace udp {
-        template<class TPacketWrapper>
+        template<class TPacketWrapper, bool TIncludeEndpoint>
         class Sender;
     }
 }

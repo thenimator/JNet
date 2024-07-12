@@ -5,7 +5,6 @@
 
 
 namespace JNet {
-    template<class TPacketWrapper>
     class ServerBase {
     public:
         using ReuseableBuffer = JNet::udp::ReuseableBuffer<JNet::udp::bufferSize,true>;
@@ -27,34 +26,29 @@ namespace JNet {
         
     };
 
-    template <class TPacketWrapper>
-    inline void ServerBase<TPacketWrapper>::baseRun()
+    inline void ServerBase::baseRun()
     {
         context.async_run();
     }
 
-    template <class TPacketWrapper>
-    inline ServerBase<TPacketWrapper>::ServerBase(uint16_t port) : udpSocket(context.getAsioContext(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port)) {
+    inline ServerBase::ServerBase(uint16_t port) : udpSocket(context.getAsioContext(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port)) {
         if (port == 0) {
             throw(std::runtime_error("Port 0 isn't supported!"));
         }
     }
 
-    template <class TPacketWrapper>
-    inline ServerBase<TPacketWrapper>::ServerBase(char err) : udpSocket(context.getAsioContext(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 16632)) {
+    inline ServerBase::ServerBase(char err) : udpSocket(context.getAsioContext(), boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 16632)) {
         if (err == 0) {
             throw std::runtime_error("Refrain from creating instances of modules. User class Server instead.");
         }
     }
 
-    template <class TPacketWrapper>
-    inline bool ServerBase<TPacketWrapper>::isRunning()
+    inline bool ServerBase::isRunning()
     {
         return !shouldClose;
     }
 
-    template<class TPacketWrapper>
-    inline void ServerBase<TPacketWrapper>::baseClose(std::chrono::microseconds finishTime) {
+    inline void ServerBase::baseClose(std::chrono::microseconds finishTime) {
         shouldClose = true;
         context.shutDown(finishTime);
     }
