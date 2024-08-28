@@ -7,6 +7,7 @@
 !/building/
 !setup.sh
 !localIP.sh
+!CMakePresets.json
 
 src/buildType.hpp
 building/ip.txt

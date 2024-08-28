@@ -4,6 +4,7 @@
 #include "defines.hpp"
 #include <iostream>
 #include "UDP/udp.hpp"
+#include <fmt/format.h>
 
 
 #if __has_include("buildType.hpp") 
