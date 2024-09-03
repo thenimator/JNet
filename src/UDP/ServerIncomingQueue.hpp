@@ -80,7 +80,6 @@ namespace JNet {
                 buffer->endpoint
                 , callback
             );
-            std::cout << "Waiting for async receive\n";
         }
 
         template <class TPacketWrapper>

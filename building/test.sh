@@ -1,5 +1,6 @@
 cd ..
-rm -f test/JNET
+cat test/testPreset.hpp > debugMode.hpp
+rm -f test/JNet
 rm -f build/JNet
 cmake --build build
 mkdir test

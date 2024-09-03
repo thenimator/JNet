@@ -12,33 +12,7 @@
 #include <functional>
 #include <fmt/format.h>
 #include <fmt/color.h>
-
-namespace JNet {
-
-    typedef uint64_t DebugFlags;
-
-    enum DebugFlag {
-        noDebug = 0x0,
-        contextDebug = 0x1,
-        clientDebug = 0x2,
-        bufferManagerDebug = 0x4,
-        serverDebug = 0x8,
-        messageDebug = 0x10,
-        clientMessageOutput = 0x20,
-        packetDebug = 0x40
-    };
-
-    constexpr DebugFlags debugFlags = clientDebug | serverDebug | bufferManagerDebug;
-
-    template<DebugFlag flag>
-    constexpr bool debugFlagActive() {
-        return (debugFlags & flag)!= 0;
-    }
-
-   
-
-}
-
+#include "debug/debugActive.hpp"
 
 #define PORT 16632
 
