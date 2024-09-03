@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <concepts>
 #include <functional>
+#include <fmt/format.h>
+#include <fmt/color.h>
 
 namespace JNet {
 

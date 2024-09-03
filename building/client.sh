@@ -1,5 +1,6 @@
 #!/bin/bash
 cd ..
+echo "WARNING! This is deprecated!"
 echo "#define BUILDTYPE BuildType::Client" > src/buildType.hpp
 rm -f client/JNet
 rm -f build/JNet
