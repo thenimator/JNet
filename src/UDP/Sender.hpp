@@ -31,7 +31,7 @@ namespace JNet {
 
 
 
-        template<class TPacketWrapper, bool TIncludeEndpoint = true>
+        template<class TPacketWrapper, bool TIncludeEndpoint>
         class Sender {
 
         };

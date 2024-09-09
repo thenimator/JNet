@@ -20,7 +20,7 @@ namespace JNet {
 
     
     template<TemplatedServerArgs>
-    class Server : private udp::PacketWrapperChecker<TPacketWrapper>, virtual public udp::IncomingMethod<TPacketWrapper, TUdpReceivemode>, virtual public udp::Sender<TPacketWrapper> {
+    class Server : private udp::PacketWrapperChecker<TPacketWrapper>, virtual public udp::IncomingMethod<TPacketWrapper, TUdpReceivemode>, virtual public udp::Sender<TPacketWrapper, true> {
     public:
         using UDPTYPES;
         using TCPTYPES;
@@ -53,7 +53,7 @@ namespace JNet {
 
 
     template<TemplatedServerArgs>
-    TemplatedServer::Server(uint16_t port) : IO_Base<true>(port), udp::IncomingMethod<TPacketWrapper, TUdpReceivemode>(), udp::Sender<TPacketWrapper>()
+    TemplatedServer::Server(uint16_t port) : IO_Base<true>(port), udp::IncomingMethod<TPacketWrapper, TUdpReceivemode>(), udp::Sender<TPacketWrapper, true>()
         //, acceptor(context.getAsioContext(), boost::asio::ip::cleatcp::endpoint(boost::asio::ip::tcp::v4(), port)) 
         {
         //boost::asio::ip::tcp::endpoint endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port);
