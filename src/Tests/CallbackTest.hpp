@@ -54,7 +54,7 @@ namespace JNet {
 
 
             if (callbackObj.message == "") {
-                output << fmt::format(fg(fmt::color::red), "Test failed! Serverqueue didn't receive packet\n");
+                output << fmt::format(fg(fmt::color::red), "Test failed! Servercallback didn't receive packet\n");
                 return testResult;
             }
 
@@ -62,10 +62,10 @@ namespace JNet {
 
 
             if (callbackObj.message == clientSendString) {
-                output << fmt::format(fg(fmt::color::light_green), "Test passed! Serverqueue received correct message\n");
+                output << fmt::format(fg(fmt::color::light_green), "Test passed! Servercallback received correct message\n");
                 testResult.succeded++;
             } else {
-                output << fmt::format(fg(fmt::color::red), "Test failed! Serverqueue received incorrect message:\n");
+                output << fmt::format(fg(fmt::color::red), "Test failed! Servercallback received incorrect message:\n");
                 output << callbackObj.message << "\n";
             }
                 
