@@ -2,13 +2,13 @@
 //#include "shorteners.hpp"
 #include "../TS/queue.hpp"
 #include "Buffer/BufferManager.hpp"
-#include "../serverbase.hpp"
+#include "../ClientServerBase/IO_Base.hpp"
 #include "ReuseablePacket.hpp"
 
 namespace JNet {
     namespace udp {
         template<class TPacketWrapper, bool TIncludeEndpoint = true>
-        class SenderBase : virtual public IO_BASE<true> {
+        class SenderBase : virtual public IO_Base<true> {
             public:
                 //using UDPTYPES;
                 using ReuseableBuffer = udp::ReuseableBuffer<udp::bufferSize,true>;
@@ -59,7 +59,7 @@ namespace JNet {
         };
 
         template <class TPacketWrapper, bool TIncludeEndpoint>
-        inline SenderBase<TPacketWrapper, TIncludeEndpoint>::SenderBase() : IO_BASE<TIncludeEndpoint>('\0') {
+        inline SenderBase<TPacketWrapper, TIncludeEndpoint>::SenderBase() : IO_Base<TIncludeEndpoint>('\0') {
 
         }
 
@@ -86,7 +86,7 @@ namespace JNet {
         }
         
         template <class TPacketWrapper>
-        inline Sender<TPacketWrapper, true>::Sender() : SenderBase<TPacketWrapper, true>(), IO_BASE<true>('\0') {
+        inline Sender<TPacketWrapper, true>::Sender() : SenderBase<TPacketWrapper, true>(), IO_Base<true>('\0') {
 
         }
 
@@ -106,7 +106,7 @@ namespace JNet {
 
 
         template <class TPacketWrapper>
-        inline Sender<TPacketWrapper, false>::Sender() : SenderBase<TPacketWrapper, false>(), IO_BASE<false>('\0') {
+        inline Sender<TPacketWrapper, false>::Sender() : SenderBase<TPacketWrapper, false>(), IO_Base<false>('\0') {
 
         }
 

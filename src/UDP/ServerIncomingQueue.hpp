@@ -6,7 +6,7 @@
 namespace JNet {
     namespace udp {
         template<class TPacketWrapper>
-        class ServerIncomingQueue : virtual public IO_BASE<true> {
+        class ServerIncomingQueue : virtual public IO_Base<true> {
         public:
             using UDPTYPES;
         public:
@@ -35,7 +35,7 @@ namespace JNet {
         };
 
         template <class TPacketWrapper>
-        inline ServerIncomingQueue<TPacketWrapper>::ServerIncomingQueue() : IO_BASE<true>('\0') {
+        inline ServerIncomingQueue<TPacketWrapper>::ServerIncomingQueue() : IO_Base<true>('\0') {
 
         }
 

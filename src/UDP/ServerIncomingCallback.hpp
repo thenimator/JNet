@@ -4,7 +4,7 @@
 namespace JNet {
     namespace udp {
         template<class TPacketWrapper>
-        class ServerIncomingCallback : public virtual IO_BASE<true> {
+        class ServerIncomingCallback : public virtual IO_Base<true> {
         public:
             using ReuseableBuffer = udp::ReuseableBuffer<JNet::udp::bufferSize,true>; 
             using BufferManager = udp::BufferManager<JNet::udp::bufferSize, SafetyFlag::threadSafe, true>; 
@@ -26,7 +26,7 @@ namespace JNet {
         };
 
         template <class TPacketWrapper>
-        inline ServerIncomingCallback<TPacketWrapper>::ServerIncomingCallback() : IO_BASE<true>('\0') {
+        inline ServerIncomingCallback<TPacketWrapper>::ServerIncomingCallback() : IO_Base<true>('\0') {
 
         }
 
