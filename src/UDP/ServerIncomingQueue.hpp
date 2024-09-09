@@ -1,7 +1,7 @@
 #pragma once
 #include "shorteners.hpp"
 #include "../TS/queue.hpp"
-#include "../ClientServerBase/IO_Base.hpp"
+#include "../IO_Base/IO_Base.hpp"
 
 namespace JNet {
     namespace udp {

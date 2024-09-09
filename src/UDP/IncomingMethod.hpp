@@ -1,7 +1,7 @@
 #pragma once
 #include "ServerIncomingQueue.hpp"
 #include "ServerIncomingCallback.hpp"
-#include "../ClientServerBase/enums.hpp"
+#include "../IO_Base/enums.hpp"
 
 namespace JNet {
     namespace udp {

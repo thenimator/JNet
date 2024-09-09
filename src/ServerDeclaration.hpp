@@ -1,5 +1,5 @@
 #pragma once
-#include "ClientServerBase/enums.hpp"
+#include "IO_Base/enums.hpp"
 #include "UDP/ServerIncomingQueueDeclaration.hpp"
 #include "UDP/ServerIncomingCallbackDeclaration.hpp"
 #include "UDP/SenderDeclaration.hpp"

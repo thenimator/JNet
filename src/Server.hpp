@@ -9,7 +9,7 @@
 #include "UDP/ReuseablePacket.hpp"
 #include "UDP/PacketWrapperChecker.hpp"
 #include "TCP/Connection.hpp"
-#include "ClientServerBase/enums.hpp"
+#include "IO_Base/enums.hpp"
 #include "shorteners.hpp"
 #include "UDP/IncomingMethod.hpp"
 #include "UDP/Sender.hpp"
