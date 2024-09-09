@@ -2,7 +2,7 @@
 //#include "shorteners.hpp"
 #include "../TS/queue.hpp"
 #include "Buffer/BufferManager.hpp"
-#include "../ClientServerBase/IO_Base.hpp"
+#include "../IO_Base/IO_Base.hpp"
 #include "ReuseablePacket.hpp"
 
 namespace JNet {
