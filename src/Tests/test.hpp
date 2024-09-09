@@ -1,5 +1,6 @@
 #pragma once
 #include "QueueTest.hpp"
+#include "CallbackTest.hpp"
 
 namespace JNet {
     namespace test {
@@ -11,6 +12,10 @@ namespace JNet {
 
             
             tempTestResult = queueTest(output);
+            testResult.succeded += tempTestResult.succeded;
+            testResult.tests += tempTestResult.tests;
+
+            tempTestResult = callbackTest(output);
             testResult.succeded += tempTestResult.succeded;
             testResult.tests += tempTestResult.tests;
 
