@@ -64,8 +64,9 @@ namespace JNet {
             std::this_thread::sleep_for(std::chrono::microseconds(1));
             finishTime -= std::chrono::microseconds(1);
             if (std::chrono::microseconds(0) == finishTime) {
-                std::cerr << "terminate() called due to shutdown() taking too long:\n" <<
-                "   There was still outstanding work\n";
+                //std::cerr << "terminate() called due to shutdown() taking too long:\n" <<
+                //"   There was still outstanding work\n"; //TODO: Fix this
+                //terminate() is always being called 
                 terminate();
                 
 

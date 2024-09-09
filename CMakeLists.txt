@@ -15,6 +15,7 @@ endif()
 
 
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_EXE_LINKER_FLAGS "-static")
 set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
@@ -23,6 +24,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
+find_package(fmt CONFIG REQUIRED)
+find_package(asio CONFIG REQUIRED)
 
 
 # ------------------ boost asio ------------------
@@ -30,8 +33,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost 1.54.0 REQUIRED system)
+find_package(Boost 1.54.0 REQUIRED COMPONENTS system)
 #find_package(Boost 1.50 REQUIRED COMPONENTS asio)
+if(${Boost_FOUND}) 
+    
+endif()
 message(STATUS "Boost version: ${Boost_VERSION}")
 
 # This is needed if your Boost version is newer than your CMake version
@@ -49,7 +55,7 @@ message(STATUS "Boost version: ${Boost_VERSION}")
 
 # ------------------ link libraries ------------------
 
-
-
 target_include_directories(JNet PRIVATE ${Boost_INCLUDE_DIRS})
-target_link_libraries(JNet ${Boost_LIBRARIES})
+target_link_libraries(JNet PRIVATE fmt::fmt)
+target_link_libraries(JNet PRIVATE asio)
+target_link_libraries(JNet PRIVATE ${Boost_LIBRARIES})

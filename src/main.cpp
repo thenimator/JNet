@@ -4,6 +4,8 @@
 #include "defines.hpp"
 #include <iostream>
 #include "UDP/udp.hpp"
+#include <fmt/format.h>
+#include "Tests/test.hpp"
 
 
 #if __has_include("buildType.hpp") 
@@ -40,6 +42,8 @@ void clientQueuePacketPrinter(JNet::Client<JNet::udp::Packet<>, JNet::udp::recei
         if (client->hasAvailablePacket()) {
             JNet::udp::ReuseablePacket packet = client->receiveIncomingPacket();
             std::cout << packet.wrapper().debugString() << "\n";
+            std::string datastring((char*)packet.wrapper().getData(), packet.wrapper().getSize());
+
             client->returnPacket(std::move(packet));
         }
         std::this_thread::sleep_for(std::chrono::nanoseconds(500));
@@ -131,7 +135,7 @@ void serverCallbackTest() {
 }
 
 int main(int argc, char** argv) {
-    if (BUILDTYPE == BuildType::Client) {       
+    /*if (BUILDTYPE == BuildType::Client) {       
         return clientQueueTest(argc, argv);
     }
     if (BUILDTYPE == BuildType::Server) {
@@ -141,6 +145,8 @@ int main(int argc, char** argv) {
             serverQueueTest();
         }
         
-    }
+    }*/
+
+    JNet::test::test(std::cout);
     return 0;
 }
