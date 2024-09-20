@@ -31,7 +31,7 @@ namespace JNet {
 
 
 
-        template<class TPacketWrapper, bool TIncludeEndpoint = true>
+        template<class TPacketWrapper, bool TIncludeEndpoint>
         class Sender {
 
         };
@@ -39,9 +39,9 @@ namespace JNet {
         template<class TPacketWrapper>
         class Sender<TPacketWrapper, false> : virtual public SenderBase<TPacketWrapper, false> {
         public:
-            using ReuseableBuffer = udp::ReuseableBuffer<udp::bufferSize,true>;
-            using BufferManager = udp::BufferManager<udp::bufferSize, SafetyFlag::threadSafe, true>;
-            using ReuseablePacket = udp::ReuseablePacket<TPacketWrapper, udp::bufferSize, true>;
+            using ReuseableBuffer = udp::ReuseableBuffer<udp::bufferSize,false>;
+            using BufferManager = udp::BufferManager<udp::bufferSize, SafetyFlag::threadSafe, false>;
+            using ReuseablePacket = udp::ReuseablePacket<TPacketWrapper, udp::bufferSize, false>;
         public:
             Sender();
             void sendPacket(ReuseablePacket packet);
